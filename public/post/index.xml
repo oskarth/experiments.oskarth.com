@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Posts on Experi</title>
+    <link>http://localhost:1313/post/</link>
+    <description>Recent content in Posts on Experi</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 28 Apr 2015 10:30:14 +0200</lastBuildDate>
+    <atom:link href="http://localhost:1313/post/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>first</title>
+      <link>http://localhost:1313/post/first/</link>
+      <pubDate>Tue, 28 Apr 2015 10:30:14 +0200</pubDate>
+      
+      <guid>http://localhost:1313/post/first/</guid>
+      <description>&lt;p&gt;Is this very different? Or what happens post 70 chars I don&amp;rsquo;t know I keep typing like a monkey in a sea full of typewriers. (huh).&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>
