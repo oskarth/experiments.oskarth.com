@@ -6,8 +6,18 @@
     <description>Recent content on Experi</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 27 Apr 2015 23:07:45 +0200</lastBuildDate>
+    <lastBuildDate>Tue, 28 Apr 2015 11:48:32 +0200</lastBuildDate>
     <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>The Watsi Experiment</title>
+      <link>http://localhost:1313/watsi-experiment/</link>
+      <pubDate>Tue, 28 Apr 2015 11:48:32 +0200</pubDate>
+      
+      <guid>http://localhost:1313/watsi-experiment/</guid>
+      <description>&lt;p&gt;The Watsi Experiment.&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>About</title>
@@ -15,19 +25,24 @@
       <pubDate>Mon, 27 Apr 2015 23:07:45 +0200</pubDate>
       
       <guid>http://localhost:1313/about/</guid>
-      <description>
+      <description>&lt;p&gt;Some content. Some moar content.&lt;/p&gt;
 
-&lt;h2 id=&#34;a-headline:6083a88ee3411b0d17ce02d738f69d47&#34;&gt;A headline&lt;/h2&gt;
-
-&lt;p&gt;Some content. Some moar content.&lt;/p&gt;
-
-&lt;p&gt;Woah!&lt;/p&gt;
-
-&lt;p&gt;That&amp;rsquo;s pretty neat. But 70 chars and then what? Let&amp;rsquo;s see we ckeep typing loike monkey.s&lt;/p&gt;
+&lt;p&gt;Woah!
+That&amp;rsquo;s pretty neat. But 70 chars and then what? Let&amp;rsquo;s see we ckeep typing loike monkey.s&lt;/p&gt;
 
 &lt;p&gt;Yes&lt;/p&gt;
 
 &lt;p&gt;Ok it just shows it all but that reloading, sweet jezz.&lt;/p&gt;
+
+&lt;p&gt;Oh it&amp;rsquo;s 70 words! So that&amp;rsquo;s a lot more. Why so many words? Who wants to read that much?&lt;/p&gt;
+
+&lt;p&gt;I certainly don&amp;rsquo;t. Well well, could always use the more thing.&lt;/p&gt;
+
+&lt;p&gt;Ok it just keeps going and going, how long is 70 words anyway?&lt;/p&gt;
+
+&lt;p&gt;Omg.&lt;/p&gt;
+
+&lt;p&gt;This is 79 words!!! Ok, it stops at 80 words. would rather have at 80 chars.&lt;/p&gt;
 </description>
     </item>
     
