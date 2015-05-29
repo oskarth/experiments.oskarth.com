@@ -1,0 +1,166 @@
+&lt;?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>nand-mental-1.md</title>
+<meta name="generator" content="emacs 24.4.50.1; htmlfontify 0.21" />
+<style type="text/css"><!-- 
+body { font-family: default;  font-stretch: normal;  font-weight: 500;  font-style: normal;  color: #808080;  background: #1c1c1c;  font-size: 10pt;  text-decoration: none; }
+span.default   { font-family: default;  font-stretch: normal;  font-weight: 500;  font-style: normal;  color: #808080;  background: #1c1c1c;  font-size: 10pt;  text-decoration: none; }
+span.default a { font-family: default;  font-stretch: normal;  font-weight: 500;  font-style: normal;  color: #808080;  background: #1c1c1c;  font-size: 10pt;  text-decoration: underline; }
+span.markdown-list-face   { color: #5f8700;  font-style: normal;  font-weight: 500;  font-family: default;  font-stretch: normal;  background: #1c1c1c;  font-size: 10pt;  text-decoration: none; }
+span.markdown-list-face a { color: #5f8700;  font-style: normal;  font-weight: 500;  font-family: default;  font-stretch: normal;  background: #1c1c1c;  font-size: 10pt;  text-decoration: underline; }
+ --></style>
+
+    <script type="text/javascript"><!--
+  
+  
+  function hasClass(obj)
+  {
+      var result = false;
+      if (obj.getAttributeNode("class") != null)
+      {
+          result = obj.getAttributeNode("class").value;
+      }
+      return result;
+  }
+
+  function stripe(id)
+  {
+      
+      
+      var even = false;
+
+      
+      
+      
+      var evenColor = arguments[1] ? arguments[1] : "#fff";
+      var oddColor  = arguments[2] ? arguments[2] : "#ddd";
+
+      
+      
+      var table = document.getElementById(id);
+      if (! table) { return; }
+
+      
+      
+      
+      var tbodies = table.getElementsByTagName("tbody");
+
+      
+      for (var h = 0; h < tbodies.length; h++)
+      {
+          
+          var trs = tbodies[h].getElementsByTagName("tr");
+
+          
+          for (var i = 0; i < trs.length; i++)
+          {
+              
+              
+              if (! hasClass(trs[i]) &&
+                  ! trs[i].style.backgroundColor)
+              {
+                  
+                  var tds = trs[i].getElementsByTagName("td");
+
+                  
+                  for (var j = 0; j < tds.length; j++)
+                  {
+                      var mytd = tds[j];
+
+                      
+                      
+                      if (! hasClass(mytd) &&
+                          ! mytd.style.backgroundColor)
+                      {
+                          mytd.style.backgroundColor =
+                            even ? evenColor : oddColor;
+                      }
+                  }
+              }
+              
+              even =  ! even;
+          }
+      }
+  }
+
+  function toggle_invis( name )
+  {
+      var filter =
+        { acceptNode:
+          function( node )
+          { var classname = node.id;
+            if( classname )
+            { var classbase = classname.substr( 0, name.length );
+              if( classbase == name ) { return NodeFilter.FILTER_ACCEPT; } }
+            return NodeFilter.FILTER_SKIP; } };
+      var walker = document.createTreeWalker( document.body           ,
+                                              NodeFilter.SHOW_ELEMENT ,
+                                              filter                  ,
+                                              false                   );
+      while( walker.nextNode() )
+      {
+          var e = walker.currentNode;
+          if( e.style.display == "none" ) { e.style.display = "inline"; }
+          else                            { e.style.display = "none";   }
+      }
+  }
+--> </script>
+  </head>
+  <body onload="stripe('index'); return true;">
+
+<pre>+++
+date = &quot;2015-05-18T15:27:52+02:00&quot;
+draft = true
+title = &quot;nand mental 1&quot;
+
++++
+
+In the last few weeks I've been following the excellent Nand To Tetris
+course. It builds up a computer from scratch. The main reason I took
+the course is because I wanted to have a better sense of how a
+computer works, and roughly how one could build one. In a sense its
+value is proportional to how well it serves as a mental value for the
+real world.
+
+So how does it stack up? This is the first of several parts series,
+starting with the first three chapters of Elements of Computer Systems
+book, where I write a bunch of assertions of how things work, and then
+diff these with what I've found out in the real world. Let's begin.
+
+From Chapter 1.
+
+<span class="markdown-list-face">1.</span> All logic functions can be built up from a NAND gate.
+
+<span class="markdown-list-face">2.</span> The above is how we build computers, make logic gates out of more
+   elementary logic gates.
+
+<span class="markdown-list-face">3.</span> There are a few exceptions to (2) above. Physically, it's a
+question of cost, speed and performance.
+
+Not testable?
+
+From chapter 2.
+
+<span class="markdown-list-face">4.</span> Negative numbers are represented by complement / raadix method.
+<span class="markdown-list-face">5.</span> Chips exists: half/full-adder, adder.
+<span class="markdown-list-face">6.</span> ALU essentially same as we do, with the exception of the control
+bits and width (16/32/64 bits).
+
+<span class="markdown-list-face">7.</span> Similiar to NAND gates, flip-flips (DFF?) places the same role for
+sequential chips.
+<span class="markdown-list-face">8.</span> Clear line between combinatorial/sequential chips.
+<span class="markdown-list-face">9.</span> Clocked is how we tell time, and this is the same as clock speed.
+<span class="markdown-list-face">10.</span> RAM is essentially the same as described.
+<span class="markdown-list-face">11.</span> PC (program counter) similar.
+
+
+</pre>
+
+ <script>document.write('<script src="http://'
+        + (location.host || 'localhost').split(':')[0]
+		+ ':1313/livereload.js?mindelay=10"></'
+        + 'script>')</script></body>
+</html>

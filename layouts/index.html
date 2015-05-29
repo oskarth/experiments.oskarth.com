@@ -1,26 +1,25 @@
 {{ partial "head.html" . }}
 <body>
-
-{{ partial "sidebar.html" . }}
-
-    <div class="content container">
-<div class="posts">
-
+  
+  {{ partial "sidebar.html" . }}
+  
+  <div class="content container">
+    <div class="posts">
+      
       {{ range .Data.Pages }}
-  <div class="post">
-    <h1 class="post-title">
-      <a href="{{ .Permalink }}">
-        {{ .Title }}
-      </a>
-    </h1>
-
-    <span class="post-date">{{ .Date.Format "Mon, Jan 2, 2006" }}</span>
-
-    {{ .Summary }}
+      <div class="post">
+        <h1 class="post-title">
+          <a href="{{ .Permalink }}">
+            {{ .Title }}
+          </a>
+        </h1>
+        
+        <span class="post-date">{{ .Date.Format "Mon, Jan 2, 2006" }}</span>
+        
+        {{ .Summary }}
+      </div>
+      {{ end }}
+    </div>
   </div>
-  {{ end }}
-</div>
-</div>
-
-  </body>
-</html>
+  
+  {{ partial "footer.html" . }}

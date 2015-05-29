@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title> Law Of The Instrument &middot; Experi </title>
+
+  
+  <link rel="stylesheet" href="http://localhost:1313//css/poole.css">
+  <link rel="stylesheet" href="http://localhost:1313//css/syntax.css">
+  <link rel="stylesheet" href="http://localhost:1313//css/hyde.css">
+  <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/favicon.ico">
+
+  
+  <link href="" rel="alternate" type="application/rss+xml" title="Experi" />
+</head>
+
+<body>
+
+<div class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <h1>Experi</h1>
+      <p class="lead">
+      Experiments every Friday.
+      </p>
+      <p><a href="http://twitter.com/oskarth">@oskarth</a></p>
+    </div>
+
+    <ul class="sidebar-nav">
+      <li><a href="/">Home</a> </li>
+      
+    </ul>
+    <p>&copy; 2015 Oskar Thorén </p>
+  </div>
+</div>
+
+
+    <div class="content container">
+<div class="post">
+  <h1>Law Of The Instrument</h1>
+  <span class="post-date">Thu, May 7, 2015</span>
+      
+
+<p>Have you ever read a blog where the first (and often, only) post is
+one about how the author set up the blog? This is a typical problem
+for programmers. It&rsquo;s a case of solving the easy problem, the one they
+know how to, as opposed to the real probem, which is the one that
+matters - to actually write something. A little more than a month ago,
+I made a similar mistake.</p>
+
+<p>This March, I introduced Unfolds in a
+<a href="http://blog.oskarth.com/unfolds-a-jungle-of-ideas-prototype">blog post</a>.
+Unfolds is on the order of 500 LOCs and 60 commits, but despite being
+my main hacking project for about a month, it fails to test anything
+useful.</p>
+
+<p>Ironically, I knew the problem I was trying to solving was mostly a
+content problem, as opposed to a tool problem, yet I attacked it by
+writing a tool. Can tools help?  Absolutely, but that is a separate
+question, and it wasn&rsquo;t my guiding principle when thinking about the
+problem. It doesn&rsquo;t matter if what you are building is clever if it
+doesn&rsquo;t solve a real problem.</p>
+
+<p>Outside of this meta-lesson, did I learn anything? Absolutely, but I
+would have learned a lot more if what I built was guided by the
+problem. As a basic example to illustrate my point: why was I setting
+up a Datomic database when just keeping everything in-memory would&rsquo;ve
+been fine?</p>
+
+<h2 id="what-would-a-real-hypothesis-look-like:ec0a197feb26282df2fbb891c7786f4f">What would a real hypothesis look like?</h2>
+
+<p>The idea behind Unfolds is still potent, and there are many questions
+and hypotheses hiding in it. Here are a few sketches, and some
+thoughts on them.</p>
+
+<ol>
+<li><p>If you understand an idea, can you get the gist of it across in
+less than 200 words? More precisely: is there any standard
+configuration (i.e. not individualized) of a limited set of words,
+such that reading them will be enough in answering the basic
+questions a person has while trying to understand an idea?</p></li>
+
+<li><p>If you only have a limited amount of time, does reading the first
+200 or so words of Wikipedia satisfy 1 above? Can we do better than
+Wikipedia on the metric we outlined?</p></li>
+
+<li><p>Can this author explain 10 concepts himself under 200 words? How
+does understanding the concepts deeply play into the choice of
+words? Essentially it&rsquo;s a compression problem, and I suspect
+knowledge of the source material is vital.</p></li>
+
+<li><p>Can we find a test for what makes a good explanation? A friend of
+mine wisely suggested that removing specific examples would be
+tempting, but most likely wrong.</p></li>
+
+<li><p>Can we create a tool that somehow encourages clear and concise
+writing? Examples: use of limited vocabulary, auto-suggestions of
+links.</p></li>
+
+<li><p>How much of a difference does links make? If we can bootstrap an
+explanation using other, possibly subordinate, explanations, this
+would help with the compression a lot. In fact, this is in a sense
+how language works.</p></li>
+
+<li><p>What about images and illustrations? Which types of illustrations
+are useful for understanding, and which are vital? For example,
+maps are distinctly superior to any verbal-only explanation you
+could come up with. On the other hand, there&rsquo;s a trade-off in
+editable and time investment.</p></li>
+</ol>
+
+<p>I&rsquo;m sure there are many more, but these are things on the top of my
+head that&rsquo;d be interesting to investigate. Some are easier to test
+than others, and I&rsquo;ll probably revisit the matter soon.</p>
+
+<h2 id="lessons:ec0a197feb26282df2fbb891c7786f4f">Lessons?</h2>
+
+<p>Aside from the problem domain, I think the lesson here is simple but
+trite: If all you have is a hammer, you will treat everything as a
+nail, but with the added twist that this is true even if you are aware
+of it.</p>
+
+<p>So what can we do about it? I think there are a few things. First of
+all, sometimes it&rsquo;s ok - maybe if I kept naively working on Unfolds it
+would have lead me somewhere interesting.</p>
+
+<p>Secondly, by releasing something before it&rsquo;s ready you get some time
+to let reality kick in and reflect.</p>
+
+<p>And lastly, by using a stricter framework, such as, in my case,
+thinking about it in terms of an experiment with a falsifiable
+hypothesis, we can make real progress, faster. Luckily, I was born
+after the scientific revolution when this idea became widespread, so I
+didn&rsquo;t have to figure this out myself, and neither do you.</p>
+
+</div>
+</div>
+
+  <script>document.write('<script src="http://'
+        + (location.host || 'localhost').split(':')[0]
+		+ ':1313/livereload.js?mindelay=10"></'
+        + 'script>')</script></body>
+</html>

@@ -6,43 +6,793 @@
     <description>Recent content on Experi</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 28 Apr 2015 11:48:32 +0200</lastBuildDate>
+    <lastBuildDate>Fri, 29 May 2015 19:00:00 +0200</lastBuildDate>
     <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
-      <title>The Watsi Experiment</title>
-      <link>http://localhost:1313/watsi-experiment/</link>
-      <pubDate>Tue, 28 Apr 2015 11:48:32 +0200</pubDate>
+      <title>Nand to Tetris 2</title>
+      <link>http://localhost:1313/nand-to-tetris-2/</link>
+      <pubDate>Fri, 29 May 2015 19:00:00 +0200</pubDate>
       
-      <guid>http://localhost:1313/watsi-experiment/</guid>
-      <description>&lt;p&gt;The Watsi Experiment.&lt;/p&gt;
+      <guid>http://localhost:1313/nand-to-tetris-2/</guid>
+      <description>
+
+&lt;p&gt;This post is the second part of our Nand to Tetris mental model
+diffing series. This week we look at machine language, computer
+architecture, and assemblers.&lt;/p&gt;
+
+&lt;p&gt;The format is the same as
+&lt;a href=&#34;http://experiments.oskarth.com/nand-to-tetris-1/&#34;&gt;last week&lt;/a&gt; - I&amp;rsquo;ve
+written down a collection of assertions and then received answers and
+comments from people who know a lot more about these things. Several
+people provided feedback this this time and you&amp;rsquo;ll find a list of them
+at the end of this post. Let&amp;rsquo;s begin!&lt;/p&gt;
+
+&lt;h2 id=&#34;assertions:05bfb7fd03f3971852673f1015e8ec08&#34;&gt;Assertions&lt;/h2&gt;
+
+&lt;p&gt;&lt;strong&gt;1. Assembly language is just mnemonic sugar over binary codes.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;This means that if you read assembly you can straightforwardly, albeit
+tediously, translate it into binary code. It also means you have “one
+assembler” per computer architecture.&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;There are certainly &amp;ldquo;high level&amp;rdquo; assembly languages where one
+mnemonic has multiple possible valid translations, but in general it&amp;rsquo;s
+accurate. It depends on what you mean exactly, for example look at
+AT&amp;amp;T vs Intel x86 assembly - they’re quite similar, and can be
+translated to each other, but people get really annoyed when they’re
+used to one and have to deal with the other, even just reading
+it. (And all of this, in turn, is leaving out what defines a computer
+architecture - is a system that can be big-Endian or little-Endian one
+architecture or two?)&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;2. Screen, Keyboard et al. are usually accessed through a memory map.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Alternatively, I know we can issue high-level instructions to a GPU
+that yields much better performance, such as &amp;ldquo;draw a line from here to
+here&amp;rdquo;. I don&amp;rsquo;t know why that is.&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;This depends on both the hardware and the OS, but I think that this
+is generally not true for &amp;ldquo;slow&amp;rdquo; I/O devices like a keyboard. For
+example, in x86/DOS, I believe that you get an
+&lt;a href=&#34;http://webpages.charter.net/danrollins/techhelp/0106.HTM&#34;&gt;int 0x09&lt;/a&gt;
+for each keypress. With a modern version of Windows and an x64/SMP
+system, it somehow uses ACPI and APIC, and I believe it’s valid to
+think of that as an abstraction over
+&lt;a href=&#34;https://en.wikipedia.org/wiki/Interrupt&#34;&gt;interrupts&lt;/a&gt;. The DOS case is
+pretty simple, and the link above explains how you can get access to
+keypresses. Modern interrupt I/O is much more complicated, and for
+Windows you can read more about it in
+&lt;a href=&#34;http://www.amazon.com/Windows-Internals-Part-Developer-Reference/dp/0735648735/&#34;&gt;Russinovich’s Windows Internals book&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Fast I/O devices will just
+&lt;a href=&#34;https://en.wikipedia.org/wiki/Direct_memory_access&#34;&gt;DMA&lt;/a&gt; stuff in and
+out of memory, though. There are multiple reasons why fast I/O devices
+are faster. The first is that they can just directly talk to memory
+instead of having to talk to a device, which talks to another device,
+which signals the CPU to talk to the I/O device to do work. And that
+signal will cause a context switch,
+&lt;a href=&#34;http://danluu.com/new-cpu-features/#context-switches-syscalls&#34;&gt;which is pretty expensive&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Another reason is that they can sit on much faster busses. PCIe gen 3
+can deliver about 1GB per lane, and it’s not uncommon to see 16+ lane
+devices. That’s a lot more than you can get out of USB. Compare that
+to USB3, where you get maybe 10Gb/s, i.e., barely more than 1GB/s,
+total. And you can do even better than PCIe if you’re on the same bus
+that the processor is on, and that’s one reason that AMD and IBM
+expose that stuff. I don’t know if you can get a
+&lt;a href=&#34;https://en.wikipedia.org/wiki/Intel_QuickPath_Interconnect&#34;&gt;QPI&lt;/a&gt;
+license from Intel, but maybe?&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Why is the GPU so much faster?&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Using a memory map adds memory copy latency and saturates the memory
+bandwidth between CPU and GPU.  For example, consider pressing return
+to create a new line at the bottom of a page &amp;ndash; you need to scroll
+everything on the view up by a line height, then add your new blank
+line.  Doing this pixel by pixel is slower than issuing a GPU command
+that says &amp;ldquo;copy a rectangle from [(x=0, y=100), (x=width, y=height)]
+to [(x=0, y=0), (x=width, y=height-100)], then fill in a background
+color area from height-100 to height.&amp;rdquo;&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;In short: The GPU is so much faster because there’s no
+throughput/latency bottleneck in copying memory across the
+motherboard. GPUs are also optimized for parallel processing (such as
+performing an operation on a matrix of pixels), and CPUs aren’t.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;3. GOTOs and jumps are the only branching statements in Assembly.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;This depends on the assembly language and architecture. For example,
+x86 has a &lt;code&gt;loop&lt;/code&gt; instruction. This is not just a macro. It’s possible
+some CPUs will implement &lt;code&gt;loop&lt;/code&gt; as a conditional branch, but it’s
+literally a hardware instruction. For an interesting example, look up
+x86 string instructions. They were designed to be fast, then were a
+slow option that stuck around for backwards compatibility, etc.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;What about Dijkstra&amp;rsquo;s &amp;ldquo;GOTO considered harmful?&amp;rdquo;&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Dijkstra wanted to promote another, more structured, way of dealing
+with software: procedures with one entry and one exit point. Taken to
+its extreme, this leads to hard-to-analyze programs, full of extra
+control flags for the one exit point of the function, and much uglier
+error-handling code - the Linux kernel extensively uses goto in
+functions where there have to be multiple memory allocations, any of
+which may fail, and where the subset that were done need to be cleaned
+up, for instance. All that said, some level of structured programming
+is generally much preferable to most uses of GOTO.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;4. The von Neumann bottleneck is still a thing.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Our computer architecture illustrates the
+&lt;a href=&#34;http://en.wikipedia.org/wiki/Von_Neumann_architecture#Von_Neumann_bottleneck&#34;&gt;von Neumann bottleneck&lt;/a&gt;,
+without explicitly talking about it. Here&amp;rsquo;s a cameo from
+&lt;a href=&#34;https://en.wikipedia.org/wiki/John_Backus&#34;&gt;John Backus&lt;/a&gt; which laments
+the existance of it:&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Surely there must be a less primitive way of making big changes in
+the store than by pushing vast numbers of words back and forth through
+the von Neumann bottleneck. Not only is this tube a literal bottleneck
+for the data traffic of a problem, but, more importantly, it is an
+intellectual bottleneck that has kept us tied to word-at-a-time
+thinking instead of encouraging us to think in terms of the larger
+conceptual units of the task at hand. Thus programming is basically
+planning and detailing the enormous traffic of words through the von
+Neumann bottleneck, and much of that traffic concerns not significant
+data itself, but where to find it.&lt;/em&gt; (from his
+&lt;a href=&#34;http://www.thocp.net/biographies/papers/backus_turingaward_lecture.pdf&#34;&gt;Turing Award lecture&lt;/a&gt;).&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Yes. Higher level languages help conceptually, but not so much in
+terms of implementation. Having tools to cut the CPU out of dealing
+with things like blatting data from devices to RAM helps a bit. But
+fundamentally, CPUs have gotten really fast, memory access is
+amazingly slow, disk access slower yet, and caches only partly
+help. &lt;a href=&#34;http://stackoverflow.com/questions/4087280/approximate-cost-to-access-various-caches-and-main-memory&#34;&gt;This&lt;/a&gt;
+has some numbers that give an idea of the costs.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;5. All symbols in an Assembler resolve to some memory address.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;No, one might denote a numerical constant, for instance. Symbol
+resolution is surprisingly deep, and parts happen at runtime - check
+out LD_PRELOAD, LD_LIBRARY_PATH, and similar under Linux, for
+instance, where even the library to be loaded, much less addresses
+within it, can vary every time you launch the program, not just at
+compile time. &lt;a href=&#34;http://www.iecc.com/linker/&#34;&gt;Linkers and loaders&lt;/a&gt; if
+quite a fun read if you have a few hours to spare.&lt;/em&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;conclusion:05bfb7fd03f3971852673f1015e8ec08&#34;&gt;Conclusion&lt;/h2&gt;
+
+&lt;p&gt;All the credit goes to these people, and any inaccuracies are due to
+this author:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;http://danluu.com/&#34;&gt;Dan Luu&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://printf.net/&#34;&gt;Chris Ball&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Darius Bacon&lt;/li&gt;
+&lt;li&gt;Kat&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Compared to last week, things got a lot more subtle quickly. It&amp;rsquo;s not
+that last week was less complicated, but the answers and diff seemed
+more straightforward. I suspect this will be increasingly true as we
+move up the stack, as things change more quickly the higher up we get.&lt;/p&gt;
+
+&lt;p&gt;A very low-resolution view of how the assertions fared would go
+something like this: Ish, No, No, Yes, No. This is good news: it means
+we are learning :)&lt;/p&gt;
 </description>
     </item>
     
     <item>
-      <title>About</title>
-      <link>http://localhost:1313/about/</link>
-      <pubDate>Mon, 27 Apr 2015 23:07:45 +0200</pubDate>
+      <title>Nand to Tetris 1, with Dan Luu</title>
+      <link>http://localhost:1313/nand-to-tetris-1/</link>
+      <pubDate>Fri, 22 May 2015 22:00:00 +0200</pubDate>
       
-      <guid>http://localhost:1313/about/</guid>
-      <description>&lt;p&gt;Some content. Some moar content.&lt;/p&gt;
+      <guid>http://localhost:1313/nand-to-tetris-1/</guid>
+      <description>
 
-&lt;p&gt;Woah!
-That&amp;rsquo;s pretty neat. But 70 chars and then what? Let&amp;rsquo;s see we ckeep typing loike monkey.s&lt;/p&gt;
+&lt;p&gt;In the last few weeks I&amp;rsquo;ve been working my way through the excellent
+book &lt;em&gt;Elements of Computing Systems - building a modern computer from
+first principles&lt;/em&gt; as part of the equally excellent Nand to Tetris
+MOOC.&lt;/p&gt;
 
-&lt;p&gt;Yes&lt;/p&gt;
+&lt;p&gt;I started reading the book a few years ago when I attended Recurse
+Center, but instead of completing it I ended up
+&lt;a href=&#34;http://blog.oskarth.com/writing-a-dsl-in-clojure&#34;&gt;writing a domain specific language&lt;/a&gt;
+for the first few chapters. A useful exercise, no doubt, but this time
+around I intend to finish the whole book.&lt;/p&gt;
 
-&lt;p&gt;Ok it just shows it all but that reloading, sweet jezz.&lt;/p&gt;
+&lt;p&gt;The main reason I want to go through the book is because I want to
+have a better sense of how a computer works, and get a rough idea how
+one could build one. In a sense its value is proportional to how well
+it serves as a mental model for the real world.&lt;/p&gt;
 
-&lt;p&gt;Oh it&amp;rsquo;s 70 words! So that&amp;rsquo;s a lot more. Why so many words? Who wants to read that much?&lt;/p&gt;
+&lt;p&gt;So how does it stack up? This is the first of a multi part series,
+starting with the first three chapters of the Elements of Computer
+Systems book, on boolean logic, boolean arithmetic, and sequential
+logic. I wrote down a collection of assertions that I wanted to diff
+with what&amp;rsquo;s out there in the real world. &lt;a href=&#34;http://danluu.com/&#34;&gt;Dan Luu&lt;/a&gt;
+was gracious enough to give me some great answers based on his
+expertise in the field. His answers are in italics.&lt;/p&gt;
 
-&lt;p&gt;I certainly don&amp;rsquo;t. Well well, could always use the more thing.&lt;/p&gt;
+&lt;p&gt;While I highly recommended that you&amp;rsquo;ve taken the equivalent of a Nand
+to Tetris course, this is not strictly necessary. With some luck this
+series will convince you to embark on a similar project on your own.&lt;/p&gt;
 
-&lt;p&gt;Ok it just keeps going and going, how long is 70 words anyway?&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s begin.&lt;/p&gt;
 
-&lt;p&gt;Omg.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;1. Any boolean function can and usually is built from NAND gates.&lt;/strong&gt;&lt;/p&gt;
 
-&lt;p&gt;This is 79 words!!! Ok, it stops at 80 words. would rather have at 80 chars.&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;While this is conceptually accurate, this usually isn’t done in
+ practice. There are multiple reasons for this, but it mostly comes
+ down to cost, power, and performance. The performance aspect is that
+ you can directly implement functions with transistors more
+ efficiently than you can with NAND gates. You can, very loosely,
+ think of this as similar to how compilers sometimes inline functions
+ and then do optimizations across inlined functions.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;This property, that any boolean function (i.e. any truth table) can be
+built using just NAND gates, is called functional completeness, and
+the proof is quite neat. Consider a truth table for some function and
+some variables. Each row where the function evaluates to true can be
+represented by ANDing together the variables, which are represented
+either as true or NOT true. We then OR together all rows to get a
+complete representation of that function’s truth table. For example,
+Xor(a,b) evaluates to true when either a or b is true. We can
+represent this as follows: OR(AND(a, NOT(b)) , AND(NOT(a), b)). We can
+thus express any boolean function using just AND, NOT and OR. It then
+turns out, using
+&lt;a href=&#34;https://en.wikipedia.org/wiki/De_Morgan&#39;s_laws&#34;&gt;De Morgan&amp;rsquo;s laws&lt;/a&gt; and
+similar logical relationships, that we can express AND, NOT, OR in
+terms of NAND.&lt;/p&gt;
+
+&lt;p&gt;Another cool thing Dan taught me is why NAND gates are usually
+prefered over NOR gates, despite both of them being functionally
+complete. If you are interested in that, you can read more
+&lt;a href=&#34;https://electronics.stackexchange.com/questions/110649/why-is-nand-gate-preferred-over-nor-gate-in-industry&#34;&gt;here&lt;/a&gt;. However,
+we did manage to get to the moon in the 60s using just
+&lt;a href=&#34;https://en.wikipedia.org/wiki/Apollo_Guidance_Computer#Design&#34;&gt;NOR gates&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;2. Logical functions are built up from more elementary ones.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Again, this is conceptually correct, but for performance reasons
+ people sometimes build logical functions directly from
+ transistors. For much more detail on this,
+ &lt;a href=&#34;http://www.amazon.com/CMOS-VLSI-Design-Circuits-Perspective/dp/0321547748&#34;&gt;Weste &amp;amp; Harris&lt;/a&gt;
+ is great. For a quick explanation, see
+ &lt;a href=&#34;http://www.cerc.utexas.edu/~jaa/vlsi/lectures/3-1.pdf&#34;&gt;this&lt;/a&gt;. That
+ explanation isn&amp;rsquo;t self contained. Some things you want to know are
+ that the funny symbol near the bottom of those diagrams is ground
+ (0), the funny line/symbol at the top is the on voltage (1). Then you
+ have the transistors. If there&amp;rsquo;s a bubble on the gate (input), that&amp;rsquo;s
+ a PMOS transistor. It turns on (conducts) when the input is 0, and
+ it&amp;rsquo;s good at passing &amp;ldquo;1&amp;rdquo;s. Otherwise, it&amp;rsquo;s an NMOS, and has the
+ opposite properties.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;Similar to the answer above, the interface is correct but the implementation is naive to the point of being misleading.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;3. Integers are represented by two&amp;rsquo;s complement.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Yes, 1&amp;rsquo;s complement is rarely used, although there are some applications where it’s superior. You might also be interested in logarithmic and residue number systems, which make some operations easier (faster) at the cost of making other operations slower. For more on that, &lt;a href=&#34;http://www.amazon.com/Computer-Arithmetic-Algorithms-Second-Edition/dp/1568811608&#34;&gt;Koren&lt;/a&gt; has a really nice text.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Also, in contrast to the address you build in nand2tetris, adders are
+commonly built using some kind of parallel prefix tree to reduce the
+delay (i.e., increase the
+performance). &lt;a href=&#34;http://en.wikipedia.org/wiki/Carry-lookahead_adder&#34;&gt;Carry-lookahead adders&lt;/a&gt;
+are probably the simplest form of this, but they’re not usually the
+fastest thing you can do. The Weste&amp;amp;Harris book mentioned above has a
+lot more information on different types of prefix trees.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;This one was funny, as I think of a carry-look-ahead as a neat
+optimization, whereas in the real world it’s too slow to use by
+itself.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;4. When adding integers in a real-world Adder, overflows are ignored.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;It depends! It’s not an error, but there’s often an output from the
+ ALU that signals an overflow.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;5. Our ALU is essentially the same as a real one.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;(Our ALU has two 16-bit inputs, six control bits, two output flags,
+and one 16-bit output).&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;It’s missing
+ &lt;a href=&#34;http://en.wikipedia.org/wiki/Pipeline_(computing)&#34;&gt;pipelining&lt;/a&gt;,
+ &lt;a href=&#34;http://en.wikipedia.org/wiki/Operand_forwarding&#34;&gt;forwarding&lt;/a&gt;, and
+ other performance optimizations, but, fundamentally, it does the same
+ stuff as a “real” ALU. Real is in quotes since it’s no less real than
+ any other ALU, although “real” ALUs usually implement many more
+ functions, have more control bits, etc. :-). Also, some “real” ALU
+ operations can also take several clock cycles, unlike the one in your
+ design.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;6. There&amp;rsquo;s one master clock that keeps track of computer time.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;This is correct for designs that are made to be simple. However, in
+ “real” designs there is often more than one clock for a multitude of
+ reasons, such as dealing with I/O devices that run at different
+ speeds. For more on how to deal with that, see
+ &lt;a href=&#34;http://www.sunburst-design.com/papers/CummingsSNUG2008Boston_CDC.pdf&#34;&gt;this&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;I would say this makes my mental model incorrect, in that I would
+expect one clock cycle to be the unit that everything in hardware
+uses, but at second thought I see why that wouldn’t make sense with
+I/O-bound hardware parts.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;7. Our Register, RAM and Program Counter are essentially realistic.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;(In addition to 16-bit input and outputs, we have the following: Our
+Register has a load bit, our RAM a load bit and an n-bit address, and
+our Program Counter has a load, inc, and reset bit).&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;This is true conceptually/logically. However, in “real” systems
+ register files are often custom circuits built at the transistor
+ level, and RAMs are also custom. On chip RAMs are usually SRAMs,
+ which are built out of transistors like other chip logic (although
+ they typically have an analog component to them, unlike the logic
+ you’ve built). Off chip DRAM is a totally different beast. There’s
+ also normally multiple read/write ports, as opposed to just one
+ combined read/write address.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;This also makes sense, but the shared memory bit sounds scary. Yet
+another rabbit hole to go into, for a rainy day.&lt;/p&gt;
+
+&lt;h2 id=&#34;conclusion:27691ee23bcc4ace73e6c7539d1a2f9c&#34;&gt;Conclusion&lt;/h2&gt;
+
+&lt;p&gt;In general, most of my assertions were right on an interface level,
+but wrong on an implementation level. Is this a good mental model? I
+think so. Unless you are building a real computer it’s good enough,
+conceptually. You could also, theoretically at least, build a computer
+using the tools given to you in Nand to Tetris that would be similar
+to an Intel machine from the early 80s, which isn’t that bad.&lt;/p&gt;
+
+&lt;p&gt;In the next part we’ll move higher up the stack, looking at machine
+language, computer architecture and an assembler.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>How to Follow pmarca on Twitter</title>
+      <link>http://localhost:1313/how-to-follow-pmarca/</link>
+      <pubDate>Fri, 15 May 2015 20:00:00 +0200</pubDate>
+      
+      <guid>http://localhost:1313/how-to-follow-pmarca/</guid>
+      <description>
+
+&lt;p&gt;It started with a question: how do you follow @pmarca on Twitter?
+@pmarca is Marc Andreessen, investor and cofounder of
+Netscape. Averaging 100 tweets a day, he is hard to keep up with.&lt;/p&gt;
+
+&lt;p&gt;When I asked this question to a group of people I got essentially two
+types of answers: (a) don&amp;rsquo;t try to keep up (b) make judicious use of
+lists. While useful, I don&amp;rsquo;t think these suggestion hit the core of
+the problem:&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Twitter Attention Inequality&lt;/strong&gt;: A person tweeting 100 times a day
+gets 100 times more exposure than someone tweeting once a day, even
+though you care equally about what they have to say.&lt;/p&gt;
+
+&lt;p&gt;When I first tried to solve this problem a few months ago, I wrote a
+bunch of code that tried to solve the problem in a general way,
+essentially making a Twitter app that displays anyone&amp;rsquo;s timeline
+filtered through a some kind of relevance score. The details don&amp;rsquo;t
+matter - the gist is that I wasted a bunch of time dealing with
+Twitter API restrictions (OAuth 1, rate limits, broken libraries,
+unable to use certain APIs, more rate limits, etc) rather than testing
+my assumptions. I attacked the problem twice, and ended up abandoning
+both approaches.&lt;/p&gt;
+
+&lt;p&gt;Yesterday I started thinking about the problem again, and realized
+there was a bunch of assumptions I could test without writing a single
+line of code.&lt;/p&gt;
+
+&lt;h2 id=&#34;hypotheses:4215a884d8a0dd0e6794f6fcc8464cd6&#34;&gt;Hypotheses&lt;/h2&gt;
+
+&lt;p&gt;First some observations: (a) I ignore most tweets and (b) unlike
+email, there are no can&amp;rsquo;t-miss tweets in a timeline.&lt;/p&gt;
+
+&lt;p&gt;Here are some assumptions I wanted to test:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;Some people tweet 10x more than average.&lt;/li&gt;
+&lt;li&gt;Some people tweet more relevant things than others.&lt;/li&gt;
+&lt;li&gt;Removing heavy tweeters will increase timeline relevance.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&#34;experiment:4215a884d8a0dd0e6794f6fcc8464cd6&#34;&gt;Experiment&lt;/h2&gt;
+
+&lt;p&gt;I looked at the last 200 tweets that came up in my timeline, which
+roughly corresponds to a 20 hour window. For each tweet I put them in
+one of three categories:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;Ignore&lt;/li&gt;
+&lt;li&gt;Engage (click, reply, think briefly about)&lt;/li&gt;
+&lt;li&gt;Recommend (favourite, retweet, or write down with other means)&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;This was a snap decision, and my measured engagement rate was probably
+higher than my actual one, since I don&amp;rsquo;t normally look carefully at
+every tweet.&lt;/p&gt;
+
+&lt;h2 id=&#34;data:4215a884d8a0dd0e6794f6fcc8464cd6&#34;&gt;Data&lt;/h2&gt;
+
+&lt;p&gt;Out of the 200 tweets, I engaged with 20% (35) of them. Less than 5%
+(1.5%) were marked as recommended. The number of 3s were so negliable,
+just two in that time period, that I decided to bake it into the
+&amp;ldquo;Engage&amp;rdquo; category. Thus, 80% of tweets were simply noise.&lt;/p&gt;
+
+&lt;p&gt;Looking at @pmarca&amp;rsquo;s tweets during the same 20 hour period, I found
+that he tweeted 30-35 times. I follow around 150 people, which makes
+@pmarca 30x more prolific of a tweeter than the average person I
+follow.&lt;/p&gt;
+
+&lt;p&gt;However, I noticed something surprising. The engagement rate for
+@pmarca&amp;rsquo;s tweets was 20%, just as it was with my normal timeline! This
+invalidated my third assumption.&lt;/p&gt;
+
+&lt;p&gt;Is it possible to increase the relevance of @pmarca&amp;rsquo;s tweets in a
+straighforward way? I tried filtering out his retweets, as well as
+only looking at the ones with a favourite count of 100 or
+more. Neither resulted in a higher engagement ratio (sample size 10),
+and both were implicit assumptions that I had in my initial
+prototypes.&lt;/p&gt;
+
+&lt;p&gt;I also looked at three people I knew were high-quality tweeters. My
+engagement for their tweets was over 50% (sample size 10), which
+suggests there is such a thing as more relevant tweeters [1].&lt;/p&gt;
+
+&lt;h2 id=&#34;a-smaller-version:4215a884d8a0dd0e6794f6fcc8464cd6&#34;&gt;A smaller version&lt;/h2&gt;
+
+&lt;p&gt;If my engagement ratio with @pmarca&amp;rsquo;s tweets is the same as my normal
+timeline, why don&amp;rsquo;t I follow him? One way to think about it is in
+terms of attentions. If I have 100 attentions, where one attention is
+one tweet, then I don&amp;rsquo;t want to spend a large portion of them on one
+person. Outside of its conversation-like nature, one of the main
+benefits of Twitter is that it allows for a plurality of views.&lt;/p&gt;
+
+&lt;p&gt;After having freed my mind from thinking I have to predict the quality
+of a tweet or tweeter, I arrived at an obvious and simple solution:
+just remove 90% randomly of his tweets, to reduce the volume! So I
+created a small Twitter bot that does exactly this, in just 50 lines
+of code of Clojure.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(ns pmarca-chen.core
+  (:require [clojure.set :as set]
+            [twitter.oauth :as oauth]
+            [twitter.api.restful :as api]))
+
+(def old-tweets (atom #{}))
+
+(def my-creds (oauth/make-oauth-creds
+               (System/getenv &amp;quot;PMARCACHEN_CONSUMER_KEY&amp;quot;)
+               (System/getenv &amp;quot;PMARCACHEN_CONSUMER_SEC&amp;quot;)
+               (System/getenv &amp;quot;PMARCACHEN_ACCESS_TOKEN&amp;quot;)
+               (System/getenv &amp;quot;PMARCACHEN_ACCESS_TOKEN_SEC&amp;quot;)))
+
+(defn timeline []
+  (api/statuses-home-timeline :oauth-creds my-creds))
+
+(defn fetch-tweets []
+  (set (map :id (:body (timeline)))))
+
+(defn retweet! [tweet]
+  (do (api/statuses-retweet-id :oauth-creds my-creds
+                               :params {:id tweet})
+      (prn &amp;quot;Tweeted &amp;quot; tweet)))
+
+(defn maybe-retweet!
+  &amp;quot;Retweet a tweet 10% of the time.&amp;quot;
+  [tweet]
+  (if (= (rand-int 10) 9)
+    (retweet! tweet)
+    (prn (str &amp;quot;Discarded tweet &amp;quot; tweet))))
+
+(defn fetch-and-retweet!
+  &amp;quot;Fetches tweets, retweets some, and calculates new tweets, and maybe
+  retweets them. Adds new tweets to old tweets set.&amp;quot;
+  []
+  (let [all-tweets (fetch-tweets)
+        new-tweets (set/difference all-tweets @old-tweets)]
+    (do (println (str &amp;quot;Found &amp;quot; (count new-tweets) &amp;quot; new tweets.&amp;quot;))
+        (dorun (map maybe-retweet! new-tweets))
+        (swap! old-tweets set/union new-tweets))))
+
+(defn periodically! [f ms]
+  (future (while true (do (Thread/sleep ms) (f)))))
+
+(comment
+  (def pmarca-chen (periodically! fetch-and-retweet! (* 1000 60 5)))
+  (future-cancel pmarca-chen)
+  )
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This checks for the latest tweets every five minutes, diffs the
+fetched tweets with tweets that have been seen already to figure out
+the new tweets, and retweets a new tweet with a probablity of 10%.&lt;/p&gt;
+
+&lt;p&gt;You can find the source code
+&lt;a href=&#34;https://github.com/oskarth/pmarca-chen&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&#34;conclusion:4215a884d8a0dd0e6794f6fcc8464cd6&#34;&gt;Conclusion&lt;/h2&gt;
+
+&lt;p&gt;You can follow @pmarca_chen on Twitter
+&lt;a href=&#34;https://twitter.com/pmarca_chen&#34;&gt;here&lt;/a&gt;. I hope people find it useful,
+and if you create a bot on your own, please let me know and I&amp;rsquo;ll add
+it here.&lt;/p&gt;
+
+&lt;p&gt;I would like to end this article with a quote by Herbert Simon:&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;A wealth of information creates a poverty of attention&lt;/em&gt;.&lt;/p&gt;
+
+&lt;p&gt;Ever since I first read that quote a few years, it stuck with me. In a
+world where information is abundant, we should fight for our
+attention, and come up with new ways of preserving and enriching it.&lt;/p&gt;
+
+&lt;h2 id=&#34;notes:4215a884d8a0dd0e6794f6fcc8464cd6&#34;&gt;Notes&lt;/h2&gt;
+
+&lt;p&gt;[1] This is outside the scope of this article, but one interesting
+idea is to use your own favourite count per user as a proxy for how
+relevant a person is to you, and then change your timeline
+accordingly.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Law Of The Instrument</title>
+      <link>http://localhost:1313/law-of-the-instrument/</link>
+      <pubDate>Fri, 08 May 2015 16:00:00 +0200</pubDate>
+      
+      <guid>http://localhost:1313/law-of-the-instrument/</guid>
+      <description>
+
+&lt;p&gt;It&amp;rsquo;s tempting to solve the problem you already know how to solve, as
+opposed to the problem that matters. This is true even if you are
+aware of it.&lt;/p&gt;
+
+&lt;p&gt;This March, I introduced Unfolds in a
+&lt;a href=&#34;http://blog.oskarth.com/unfolds-a-jungle-of-ideas-prototype&#34;&gt;blog post&lt;/a&gt;. Seen
+as an experiment, Unfolds was a failure. It&amp;rsquo;s on the order of 500
+lines of Clojure/Clojurescript code, and despite being my main hacking
+project for about a month, it failed to test an actual hypothesis.&lt;/p&gt;
+
+&lt;p&gt;What I set out to do with Unfolds was to get to the gist of an idea in
+a few hundred words. This is mostly a problem of writing these gists
+clearly and concisely. Without that you have nothing. I was well aware
+of this, but yet I approached the problem by spending my time writing
+a tool for creating and browsing these gists. What went wrong? We can
+get a clue by listening to the words of Abraham Kaplan:&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;I call it the law of the instrument, and it may be formulated as
+follows: Give a small boy a hammer, and he will find that everything
+he encounters needs pounding.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;My hammer was programming, and I was pounding away at a tool that
+served a subordinate purpose to gists that don&amp;rsquo;t even exist yet.&lt;/p&gt;
+
+&lt;p&gt;The real problem here is so difficult, and I hadn&amp;rsquo;t sufficiently
+deconstructured and simplified it, that I ended up trying to solve a
+different problem. It doesn&amp;rsquo;t matter if what you are building is
+clever if it doesn&amp;rsquo;t solve a real problem. An hypothesis that can
+reasonably be falsified would function as a compass, and keep the
+pursuit honest.&lt;/p&gt;
+
+&lt;p&gt;Would making a tool necessarily be a bad idea? No, but that would be a
+different direction and a different hypothesis. If you are building a
+house with just a hammer, you&amp;rsquo;ll have a bad time cleaning windows.&lt;/p&gt;
+
+&lt;h2 id=&#34;what-would-a-real-hypothesis-look-like:6b88f7334be4fa2dbac03e6a172d8291&#34;&gt;What would a real hypothesis look like?&lt;/h2&gt;
+
+&lt;p&gt;The idea behind Unfolds is still potent, and there are many questions
+and hypotheses hiding in it. Here are a few sketches of assertions
+that can be tested.&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;You can communicate the gist of an idea in less than 200 words. By
+gist we mean that reading these words will be enough for most
+research purposes.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;The first 200 words of a Wikipedia article do not satisfy the
+metric in 1.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;This author can explain ten concepts in under 200 words. This is
+only true for concepts that are familiar to him.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Images and illustrations are vital in a few select domains, but not
+needed in the majority of explanations. Specifically, there&amp;rsquo;s a
+trade-off in time investment, and it&amp;rsquo;s usually not worth it.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;There exist heuristics which make a short explanation particularly
+good or particularly bad. These can be discovered. It&amp;rsquo;s possible to
+build tools that encourage good explanations.&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;I&amp;rsquo;m sure there are many more, but these are things on the top of my
+head that&amp;rsquo;d be interesting to investigate. Some assertions are easier
+to test than others, and I&amp;rsquo;ll probably revisit the matter soon.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>The Watsi Experiment</title>
+      <link>http://localhost:1313/watsi-experiment/</link>
+      <pubDate>Fri, 01 May 2015 18:00:00 +0200</pubDate>
+      
+      <guid>http://localhost:1313/watsi-experiment/</guid>
+      <description>
+
+&lt;p&gt;Along with Wikipedia, Watsi is probably one of the best uses of the
+Internet I&amp;rsquo;ve seen.&lt;/p&gt;
+
+&lt;p&gt;Disclaimer: I have no association with Watsi, except as a user.&lt;/p&gt;
+
+&lt;p&gt;Watsi specialize in low-cost, high-impact healthcare funding. 100% of
+donation money goes to a specific patient of your choice, and they are
+ridiculously transparent with their finances (there&amp;rsquo;s a google doc
+linked from their website containing all their operations and
+financials, including screenshots of bank transfers for each
+operation). In short, it&amp;rsquo;s hard to imagine a better way to fund
+healthcare around the world.&lt;/p&gt;
+
+&lt;p&gt;Last Christmas, I decided to conduct an experiment. I wanted to give
+people an opportunity to use Watsi, but instead of giving a large
+amount to a few people, or a medium amount to some people, I decided
+to give a small amount to many people.&lt;/p&gt;
+
+&lt;h2 id=&#34;hypothesis:2406d8910f03d4cf56e52ea4977a7227&#34;&gt;Hypothesis&lt;/h2&gt;
+
+&lt;p&gt;I did not make a clear hypothesis back then. I was generally curious
+about how many people would give Watsi a try, and how many of those
+would find it compelling enough to use again. As one person put it,&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;My inner engineer can&amp;rsquo;t help but appreciate that it&amp;rsquo;s likely to
+amplify your original donation by roping in some more people too!&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;This was my intution too.&lt;/p&gt;
+
+&lt;h2 id=&#34;experiment:2406d8910f03d4cf56e52ea4977a7227&#34;&gt;Experiment&lt;/h2&gt;
+
+&lt;p&gt;Around Christmas time, 16 friends, family and acquaintances got a
+small dollar dollar gift card ($5 for most, and $20 for family), along
+with an email explaining Watsi and that this was part of an
+experiment.&lt;/p&gt;
+
+&lt;p&gt;This was not completely thought out. I had opted people into something
+without their permission, and several things were unclear (what is the
+experiment exactly? what if I don&amp;rsquo;t want to participate?). After some
+feedback I sent a second email to clarify that if they didn&amp;rsquo;t use
+their gift certificate within three months, the money would go to
+Watsi&amp;rsquo;s Universal Fund.&lt;/p&gt;
+
+&lt;p&gt;Three months later, I sent a second email asking people to fill out a
+short anonymous 30 second survey. I got a response rate of &lt;sup&gt;11&lt;/sup&gt;&amp;frasl;&lt;sub&gt;16&lt;/sub&gt;. The
+questions I asked were the following:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;Had you used Watsi before?&lt;/li&gt;
+&lt;li&gt;Did you use your gift card?&lt;/li&gt;
+&lt;li&gt;On a scale of 1-10 (10 being certain), how likely is it that you
+will donate to Watsi again within the coming year?&lt;/li&gt;
+&lt;li&gt;Comments/suggestions/critiques (optional)&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;The responses were as follows. Only 1 person had heard of Watsi
+before, 2 people did not use the gift certificate, and the answers to
+the third question was: 2-3-3-4-4-6-6-6-7-8-10.&lt;/p&gt;
+
+&lt;p&gt;That only 1 person had heard of Watsi before came as a surprise to me,
+and indicates that Watsi is still very small - there&amp;rsquo;s already a
+sample bias in the people I chose, as a lot of them are involved in
+tech and the startup world.&lt;/p&gt;
+
+&lt;p&gt;Assuming that those who didn&amp;rsquo;t respond to the survey didn&amp;rsquo;t use it,
+implies that more than half used their certificate, which is still
+pretty good. There were however some problems. One person tried to use
+the gift card two or three times, but wasn&amp;rsquo;t able to claim it without
+being logged in. Setting up an account did not help the matter
+either. This is unfortunate and seems to be a, hopefully temporary,
+bug in their system.&lt;/p&gt;
+
+&lt;p&gt;The third question is a trick I learned from my marketing class many
+years ago. The idea is that in such questions, only 9 and 10
+constitutes a real yes. If we are being generous, we could call a 7 or
+8 a maybe, but the rest are best treated as a no. This means we have 1
+yes and 2 no, out of 16 people.&lt;/p&gt;
+
+&lt;p&gt;This last result was surprising to me - I would&amp;rsquo;ve assumed this number
+would be higher. I&amp;rsquo;ll talk more about this in the next section.&lt;/p&gt;
+
+&lt;p&gt;Here are some other comments that people made.&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;I donated in my mom&amp;rsquo;s name&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;!-- --&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;Tried to set up my own regular donation but I was not allowed to
+give a lump sum and too much was lost in currency exchange when
+transfers were made monthly. I contacted them for alternatives such
+as pay pal but no joy.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;!-- --&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;I&amp;rsquo;m impressed by the follow up with information sent to me about the
+receiver of my donation.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;!-- --&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;Not sure I&amp;rsquo;d do it this year &amp;ndash; I think it would be more successful
+if the campaign was more connected to something that meant to
+me. Like educating inner city kids etc.&lt;/p&gt;
+
+&lt;p&gt;Yeah &amp;ndash; mostly I&amp;rsquo;m just super disconnected from it.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;!-- --&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;I&amp;rsquo;ve done a lot with Kiva, and honestly I&amp;rsquo;m more likely to continue
+with that.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&#34;conclusion:2406d8910f03d4cf56e52ea4977a7227&#34;&gt;Conclusion&lt;/h2&gt;
+
+&lt;p&gt;This was a successful experiment in that we could test the hypothesis,
+even if it was ill-specified. It turns out that people are quite
+willing to use a gift certificate, but not as interested in using
+Watsi again.&lt;/p&gt;
+
+&lt;p&gt;Given my own high opinion of Watsi, and
+&lt;a href=&#34;https://www.changemakers.com/sites/default/files/styles/project_slider/public/growth-graph.png&#34;&gt;their&lt;/a&gt;
+&lt;a href=&#34;https://pbs.twimg.com/media/B-QO__bCcAADarb.png&#34;&gt;amazing&lt;/a&gt;
+&lt;a href=&#34;https://chartio.com/hmedia/images/blog/2015/03/watsi-data/universal-fund-donations.png&#34;&gt;growth&lt;/a&gt;,
+which indicates that they are doing something that people really want,
+what went wrong?&lt;/p&gt;
+
+&lt;p&gt;The biggest error source is the way the experiment was set up. There
+was a lot of unclear and bad communication on my part, and there was
+absolutely zero intent among the people surveyed. This was something I
+didn&amp;rsquo;t expect, but it makes a lot of sense. People have different
+priorities, are at various stages in their lives, and have a limited
+amount of attention. Consider this example: people want cars. It&amp;rsquo;s a
+huge industry, people need to get from point A to B. But if you were
+to semi-randomly ask people if they want to buy a car from a certain
+brand within the next year, most people would say no. Even adjusting
+for the different magnitude in purchase decision, that alone is enough
+to explain how few people would use it again.&lt;/p&gt;
+
+&lt;p&gt;In fact, despite my initial disappointment, that I got ~10 more people
+to know about the existence of Watsi, and that 1 out of 16 will try
+Watsi again (a number that would be 2 if they fixed their European
+payment options), should be seen as a success, albeit a small one.&lt;/p&gt;
+
+&lt;h2 id=&#34;future-work:2406d8910f03d4cf56e52ea4977a7227&#34;&gt;Future work&lt;/h2&gt;
+
+&lt;p&gt;I see two interesting directions. One is to set up a better experiment
+with a bigger sample, and make it opt-in, as opposed to opt-out like
+my experiment was. The other is to explore the concept of intent. For
+example, what would happen if whenever someone expresses intent of
+helping people with healthcare, or talks about wanting to help people
+in poor areas, they would get invited to try Watsi for $5? Of course
+we have to be careful getting too spammy, but the fact that (a) 100%
+goes to the person and (b) it&amp;rsquo;s real money, would mean that the risk
+of that would be almost negligible.&lt;/p&gt;
+
+&lt;p&gt;There are many opportunities that open up with the Internet, and Watsi
+is a great model for charity in the 21st century.&lt;/p&gt;
+
+&lt;p&gt;If you want to fund healthcare for people all around the world, go to
+&lt;a href=&#34;https://watsi.org/&#34;&gt;watsi.org&lt;/a&gt;.&lt;/p&gt;
 </description>
     </item>
     

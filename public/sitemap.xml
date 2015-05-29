@@ -3,18 +3,33 @@
   
   <url>
     <loc>http://localhost:1313/</loc>
-    <lastmod>2015-04-28T11:48:32+02:00</lastmod>
+    <lastmod>2015-05-29T19:00:00+02:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>http://localhost:1313/watsi-experiment/</loc>
-    <lastmod>2015-04-28T11:48:32+02:00</lastmod>
+    <loc>http://localhost:1313/nand-to-tetris-2/</loc>
+    <lastmod>2015-05-29T19:00:00+02:00</lastmod>
   </url>
   
   <url>
-    <loc>http://localhost:1313/about/</loc>
-    <lastmod>2015-04-27T23:07:45+02:00</lastmod>
+    <loc>http://localhost:1313/nand-to-tetris-1/</loc>
+    <lastmod>2015-05-22T22:00:00+02:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost:1313/how-to-follow-pmarca/</loc>
+    <lastmod>2015-05-15T20:00:00+02:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost:1313/law-of-the-instrument/</loc>
+    <lastmod>2015-05-08T16:00:00+02:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://localhost:1313/watsi-experiment/</loc>
+    <lastmod>2015-05-01T18:00:00+02:00</lastmod>
   </url>
   
 </urlset>

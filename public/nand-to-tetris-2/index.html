@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title> Nand to Tetris 2 &middot; Experi </title>
+
+  
+  <link rel="stylesheet" href="http://localhost:1313//css/poole.css">
+  <link rel="stylesheet" href="http://localhost:1313//css/syntax.css">
+  <link rel="stylesheet" href="http://localhost:1313//css/hyde.css">
+  <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/favicon.ico">
+
+  
+  <link href="" rel="alternate" type="application/rss+xml" title="Experi" />
+</head>
+
+<body>
+
+<div class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <h1>Experi</h1>
+      <p class="lead">
+      Experiments every Friday.
+      </p>
+      <p><a href="http://twitter.com/oskarth">@oskarth</a></p>
+    </div>
+
+    <ul class="sidebar-nav">
+      <li><a href="/">Home</a> </li>
+      
+    </ul>
+    <p>&copy; 2015 Oskar Thorén </p>
+  </div>
+</div>
+
+
+    <div class="content container">
+<div class="post">
+  <h1>Nand to Tetris 2</h1>
+  <span class="post-date">Fri, May 29, 2015</span>
+      
+
+<p>This post is the second part of our Nand to Tetris mental model
+diffing series. This week we look at machine language, computer
+architecture, and assemblers.</p>
+
+<p>The format is the same as
+<a href="http://experiments.oskarth.com/nand-to-tetris-1/">last week</a> - I&rsquo;ve
+written down a collection of assertions and then received answers and
+comments from people who know a lot more about these things. Several
+people provided feedback this this time and you&rsquo;ll find a list of them
+at the end of this post. Let&rsquo;s begin!</p>
+
+<h2 id="assertions:05bfb7fd03f3971852673f1015e8ec08">Assertions</h2>
+
+<p><strong>1. Assembly language is just mnemonic sugar over binary codes.</strong></p>
+
+<p>This means that if you read assembly you can straightforwardly, albeit
+tediously, translate it into binary code. It also means you have “one
+assembler” per computer architecture.</p>
+
+<p><em>There are certainly &ldquo;high level&rdquo; assembly languages where one
+mnemonic has multiple possible valid translations, but in general it&rsquo;s
+accurate. It depends on what you mean exactly, for example look at
+AT&amp;T vs Intel x86 assembly - they’re quite similar, and can be
+translated to each other, but people get really annoyed when they’re
+used to one and have to deal with the other, even just reading
+it. (And all of this, in turn, is leaving out what defines a computer
+architecture - is a system that can be big-Endian or little-Endian one
+architecture or two?)</em></p>
+
+<p><strong>2. Screen, Keyboard et al. are usually accessed through a memory map.</strong></p>
+
+<p>Alternatively, I know we can issue high-level instructions to a GPU
+that yields much better performance, such as &ldquo;draw a line from here to
+here&rdquo;. I don&rsquo;t know why that is.</p>
+
+<p><em>This depends on both the hardware and the OS, but I think that this
+is generally not true for &ldquo;slow&rdquo; I/O devices like a keyboard. For
+example, in x86/DOS, I believe that you get an
+<a href="http://webpages.charter.net/danrollins/techhelp/0106.HTM">int 0x09</a>
+for each keypress. With a modern version of Windows and an x64/SMP
+system, it somehow uses ACPI and APIC, and I believe it’s valid to
+think of that as an abstraction over
+<a href="https://en.wikipedia.org/wiki/Interrupt">interrupts</a>. The DOS case is
+pretty simple, and the link above explains how you can get access to
+keypresses. Modern interrupt I/O is much more complicated, and for
+Windows you can read more about it in
+<a href="http://www.amazon.com/Windows-Internals-Part-Developer-Reference/dp/0735648735/">Russinovich’s Windows Internals book</a>.</em></p>
+
+<p><em>Fast I/O devices will just
+<a href="https://en.wikipedia.org/wiki/Direct_memory_access">DMA</a> stuff in and
+out of memory, though. There are multiple reasons why fast I/O devices
+are faster. The first is that they can just directly talk to memory
+instead of having to talk to a device, which talks to another device,
+which signals the CPU to talk to the I/O device to do work. And that
+signal will cause a context switch,
+<a href="http://danluu.com/new-cpu-features/#context-switches-syscalls">which is pretty expensive</a>.</em></p>
+
+<p><em>Another reason is that they can sit on much faster busses. PCIe gen 3
+can deliver about 1GB per lane, and it’s not uncommon to see 16+ lane
+devices. That’s a lot more than you can get out of USB. Compare that
+to USB3, where you get maybe 10Gb/s, i.e., barely more than 1GB/s,
+total. And you can do even better than PCIe if you’re on the same bus
+that the processor is on, and that’s one reason that AMD and IBM
+expose that stuff. I don’t know if you can get a
+<a href="https://en.wikipedia.org/wiki/Intel_QuickPath_Interconnect">QPI</a>
+license from Intel, but maybe?</em></p>
+
+<p><strong>Why is the GPU so much faster?</strong></p>
+
+<p><em>Using a memory map adds memory copy latency and saturates the memory
+bandwidth between CPU and GPU.  For example, consider pressing return
+to create a new line at the bottom of a page &ndash; you need to scroll
+everything on the view up by a line height, then add your new blank
+line.  Doing this pixel by pixel is slower than issuing a GPU command
+that says &ldquo;copy a rectangle from [(x=0, y=100), (x=width, y=height)]
+to [(x=0, y=0), (x=width, y=height-100)], then fill in a background
+color area from height-100 to height.&rdquo;</em></p>
+
+<p><em>In short: The GPU is so much faster because there’s no
+throughput/latency bottleneck in copying memory across the
+motherboard. GPUs are also optimized for parallel processing (such as
+performing an operation on a matrix of pixels), and CPUs aren’t.</em></p>
+
+<p><strong>3. GOTOs and jumps are the only branching statements in Assembly.</strong></p>
+
+<p><em>This depends on the assembly language and architecture. For example,
+x86 has a <code>loop</code> instruction. This is not just a macro. It’s possible
+some CPUs will implement <code>loop</code> as a conditional branch, but it’s
+literally a hardware instruction. For an interesting example, look up
+x86 string instructions. They were designed to be fast, then were a
+slow option that stuck around for backwards compatibility, etc.</em></p>
+
+<p><strong>What about Dijkstra&rsquo;s &ldquo;GOTO considered harmful?&rdquo;</strong></p>
+
+<p><em>Dijkstra wanted to promote another, more structured, way of dealing
+with software: procedures with one entry and one exit point. Taken to
+its extreme, this leads to hard-to-analyze programs, full of extra
+control flags for the one exit point of the function, and much uglier
+error-handling code - the Linux kernel extensively uses goto in
+functions where there have to be multiple memory allocations, any of
+which may fail, and where the subset that were done need to be cleaned
+up, for instance. All that said, some level of structured programming
+is generally much preferable to most uses of GOTO.</em></p>
+
+<p><strong>4. The von Neumann bottleneck is still a thing.</strong></p>
+
+<p>Our computer architecture illustrates the
+<a href="http://en.wikipedia.org/wiki/Von_Neumann_architecture#Von_Neumann_bottleneck">von Neumann bottleneck</a>,
+without explicitly talking about it. Here&rsquo;s a cameo from
+<a href="https://en.wikipedia.org/wiki/John_Backus">John Backus</a> which laments
+the existance of it:</p>
+
+<p><em>Surely there must be a less primitive way of making big changes in
+the store than by pushing vast numbers of words back and forth through
+the von Neumann bottleneck. Not only is this tube a literal bottleneck
+for the data traffic of a problem, but, more importantly, it is an
+intellectual bottleneck that has kept us tied to word-at-a-time
+thinking instead of encouraging us to think in terms of the larger
+conceptual units of the task at hand. Thus programming is basically
+planning and detailing the enormous traffic of words through the von
+Neumann bottleneck, and much of that traffic concerns not significant
+data itself, but where to find it.</em> (from his
+<a href="http://www.thocp.net/biographies/papers/backus_turingaward_lecture.pdf">Turing Award lecture</a>).</p>
+
+<p><em>Yes. Higher level languages help conceptually, but not so much in
+terms of implementation. Having tools to cut the CPU out of dealing
+with things like blatting data from devices to RAM helps a bit. But
+fundamentally, CPUs have gotten really fast, memory access is
+amazingly slow, disk access slower yet, and caches only partly
+help. <a href="http://stackoverflow.com/questions/4087280/approximate-cost-to-access-various-caches-and-main-memory">This</a>
+has some numbers that give an idea of the costs.</em></p>
+
+<p><strong>5. All symbols in an Assembler resolve to some memory address.</strong></p>
+
+<p><em>No, one might denote a numerical constant, for instance. Symbol
+resolution is surprisingly deep, and parts happen at runtime - check
+out LD_PRELOAD, LD_LIBRARY_PATH, and similar under Linux, for
+instance, where even the library to be loaded, much less addresses
+within it, can vary every time you launch the program, not just at
+compile time. <a href="http://www.iecc.com/linker/">Linkers and loaders</a> if
+quite a fun read if you have a few hours to spare.</em></p>
+
+<h2 id="conclusion:05bfb7fd03f3971852673f1015e8ec08">Conclusion</h2>
+
+<p>All the credit goes to these people, and any inaccuracies are due to
+this author:</p>
+
+<ul>
+<li><a href="http://danluu.com/">Dan Luu</a></li>
+<li><a href="http://printf.net/">Chris Ball</a></li>
+<li>Darius Bacon</li>
+<li>Kat</li>
+</ul>
+
+<p>Compared to last week, things got a lot more subtle quickly. It&rsquo;s not
+that last week was less complicated, but the answers and diff seemed
+more straightforward. I suspect this will be increasingly true as we
+move up the stack, as things change more quickly the higher up we get.</p>
+
+<p>A very low-resolution view of how the assertions fared would go
+something like this: Ish, No, No, Yes, No. This is good news: it means
+we are learning :)</p>
+
+</div>
+</div>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-62506585-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+<script>document.write('<script src="http://'
+        + (location.host || 'localhost').split(':')[0]
+		+ ':1313/livereload.js?mindelay=10"></'
+        + 'script>')</script></body>
+</html>
+

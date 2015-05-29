@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title> Nand to Tetris 1, with Dan Luu &middot; Experi </title>
+
+  
+  <link rel="stylesheet" href="http://localhost:1313//css/poole.css">
+  <link rel="stylesheet" href="http://localhost:1313//css/syntax.css">
+  <link rel="stylesheet" href="http://localhost:1313//css/hyde.css">
+  <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/favicon.ico">
+
+  
+  <link href="" rel="alternate" type="application/rss+xml" title="Experi" />
+</head>
+
+<body>
+
+<div class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <h1>Experi</h1>
+      <p class="lead">
+      Experiments every Friday.
+      </p>
+      <p><a href="http://twitter.com/oskarth">@oskarth</a></p>
+    </div>
+
+    <ul class="sidebar-nav">
+      <li><a href="/">Home</a> </li>
+      
+    </ul>
+    <p>&copy; 2015 Oskar Thorén </p>
+  </div>
+</div>
+
+
+    <div class="content container">
+<div class="post">
+  <h1>Nand to Tetris 1, with Dan Luu</h1>
+  <span class="post-date">Fri, May 22, 2015</span>
+      
+
+<p>In the last few weeks I&rsquo;ve been working my way through the excellent
+book <em>Elements of Computing Systems - building a modern computer from
+first principles</em> as part of the equally excellent Nand to Tetris
+MOOC.</p>
+
+<p>I started reading the book a few years ago when I attended Recurse
+Center, but instead of completing it I ended up
+<a href="http://blog.oskarth.com/writing-a-dsl-in-clojure">writing a domain specific language</a>
+for the first few chapters. A useful exercise, no doubt, but this time
+around I intend to finish the whole book.</p>
+
+<p>The main reason I want to go through the book is because I want to
+have a better sense of how a computer works, and get a rough idea how
+one could build one. In a sense its value is proportional to how well
+it serves as a mental model for the real world.</p>
+
+<p>So how does it stack up? This is the first of a multi part series,
+starting with the first three chapters of the Elements of Computer
+Systems book, on boolean logic, boolean arithmetic, and sequential
+logic. I wrote down a collection of assertions that I wanted to diff
+with what&rsquo;s out there in the real world. <a href="http://danluu.com/">Dan Luu</a>
+was gracious enough to give me some great answers based on his
+expertise in the field. His answers are in italics.</p>
+
+<p>While I highly recommended that you&rsquo;ve taken the equivalent of a Nand
+to Tetris course, this is not strictly necessary. With some luck this
+series will convince you to embark on a similar project on your own.</p>
+
+<p>Let&rsquo;s begin.</p>
+
+<p><strong>1. Any boolean function can and usually is built from NAND gates.</strong></p>
+
+<p><em>While this is conceptually accurate, this usually isn’t done in
+ practice. There are multiple reasons for this, but it mostly comes
+ down to cost, power, and performance. The performance aspect is that
+ you can directly implement functions with transistors more
+ efficiently than you can with NAND gates. You can, very loosely,
+ think of this as similar to how compilers sometimes inline functions
+ and then do optimizations across inlined functions.</em></p>
+
+<p>This property, that any boolean function (i.e. any truth table) can be
+built using just NAND gates, is called functional completeness, and
+the proof is quite neat. Consider a truth table for some function and
+some variables. Each row where the function evaluates to true can be
+represented by ANDing together the variables, which are represented
+either as true or NOT true. We then OR together all rows to get a
+complete representation of that function’s truth table. For example,
+Xor(a,b) evaluates to true when either a or b is true. We can
+represent this as follows: OR(AND(a, NOT(b)) , AND(NOT(a), b)). We can
+thus express any boolean function using just AND, NOT and OR. It then
+turns out, using
+<a href="https://en.wikipedia.org/wiki/De_Morgan's_laws">De Morgan&rsquo;s laws</a> and
+similar logical relationships, that we can express AND, NOT, OR in
+terms of NAND.</p>
+
+<p>Another cool thing Dan taught me is why NAND gates are usually
+prefered over NOR gates, despite both of them being functionally
+complete. If you are interested in that, you can read more
+<a href="https://electronics.stackexchange.com/questions/110649/why-is-nand-gate-preferred-over-nor-gate-in-industry">here</a>. However,
+we did manage to get to the moon in the 60s using just
+<a href="https://en.wikipedia.org/wiki/Apollo_Guidance_Computer#Design">NOR gates</a>.</p>
+
+<p><strong>2. Logical functions are built up from more elementary ones.</strong></p>
+
+<p><em>Again, this is conceptually correct, but for performance reasons
+ people sometimes build logical functions directly from
+ transistors. For much more detail on this,
+ <a href="http://www.amazon.com/CMOS-VLSI-Design-Circuits-Perspective/dp/0321547748">Weste &amp; Harris</a>
+ is great. For a quick explanation, see
+ <a href="http://www.cerc.utexas.edu/~jaa/vlsi/lectures/3-1.pdf">this</a>. That
+ explanation isn&rsquo;t self contained. Some things you want to know are
+ that the funny symbol near the bottom of those diagrams is ground
+ (0), the funny line/symbol at the top is the on voltage (1). Then you
+ have the transistors. If there&rsquo;s a bubble on the gate (input), that&rsquo;s
+ a PMOS transistor. It turns on (conducts) when the input is 0, and
+ it&rsquo;s good at passing &ldquo;1&rdquo;s. Otherwise, it&rsquo;s an NMOS, and has the
+ opposite properties.</em></p>
+
+<p>Similar to the answer above, the interface is correct but the implementation is naive to the point of being misleading.</p>
+
+<p><strong>3. Integers are represented by two&rsquo;s complement.</strong></p>
+
+<p><em>Yes, 1&rsquo;s complement is rarely used, although there are some applications where it’s superior. You might also be interested in logarithmic and residue number systems, which make some operations easier (faster) at the cost of making other operations slower. For more on that, <a href="http://www.amazon.com/Computer-Arithmetic-Algorithms-Second-Edition/dp/1568811608">Koren</a> has a really nice text.</em></p>
+
+<p><em>Also, in contrast to the address you build in nand2tetris, adders are
+commonly built using some kind of parallel prefix tree to reduce the
+delay (i.e., increase the
+performance). <a href="http://en.wikipedia.org/wiki/Carry-lookahead_adder">Carry-lookahead adders</a>
+are probably the simplest form of this, but they’re not usually the
+fastest thing you can do. The Weste&amp;Harris book mentioned above has a
+lot more information on different types of prefix trees.</em></p>
+
+<p>This one was funny, as I think of a carry-look-ahead as a neat
+optimization, whereas in the real world it’s too slow to use by
+itself.</p>
+
+<p><strong>4. When adding integers in a real-world Adder, overflows are ignored.</strong></p>
+
+<p><em>It depends! It’s not an error, but there’s often an output from the
+ ALU that signals an overflow.</em></p>
+
+<p><strong>5. Our ALU is essentially the same as a real one.</strong></p>
+
+<p>(Our ALU has two 16-bit inputs, six control bits, two output flags,
+and one 16-bit output).</p>
+
+<p><em>It’s missing
+ <a href="http://en.wikipedia.org/wiki/Pipeline_(computing)">pipelining</a>,
+ <a href="http://en.wikipedia.org/wiki/Operand_forwarding">forwarding</a>, and
+ other performance optimizations, but, fundamentally, it does the same
+ stuff as a “real” ALU. Real is in quotes since it’s no less real than
+ any other ALU, although “real” ALUs usually implement many more
+ functions, have more control bits, etc. :-). Also, some “real” ALU
+ operations can also take several clock cycles, unlike the one in your
+ design.</em></p>
+
+<p><strong>6. There&rsquo;s one master clock that keeps track of computer time.</strong></p>
+
+<p><em>This is correct for designs that are made to be simple. However, in
+ “real” designs there is often more than one clock for a multitude of
+ reasons, such as dealing with I/O devices that run at different
+ speeds. For more on how to deal with that, see
+ <a href="http://www.sunburst-design.com/papers/CummingsSNUG2008Boston_CDC.pdf">this</a>.</em></p>
+
+<p>I would say this makes my mental model incorrect, in that I would
+expect one clock cycle to be the unit that everything in hardware
+uses, but at second thought I see why that wouldn’t make sense with
+I/O-bound hardware parts.</p>
+
+<p><strong>7. Our Register, RAM and Program Counter are essentially realistic.</strong></p>
+
+<p>(In addition to 16-bit input and outputs, we have the following: Our
+Register has a load bit, our RAM a load bit and an n-bit address, and
+our Program Counter has a load, inc, and reset bit).</p>
+
+<p><em>This is true conceptually/logically. However, in “real” systems
+ register files are often custom circuits built at the transistor
+ level, and RAMs are also custom. On chip RAMs are usually SRAMs,
+ which are built out of transistors like other chip logic (although
+ they typically have an analog component to them, unlike the logic
+ you’ve built). Off chip DRAM is a totally different beast. There’s
+ also normally multiple read/write ports, as opposed to just one
+ combined read/write address.</em></p>
+
+<p>This also makes sense, but the shared memory bit sounds scary. Yet
+another rabbit hole to go into, for a rainy day.</p>
+
+<h2 id="conclusion:27691ee23bcc4ace73e6c7539d1a2f9c">Conclusion</h2>
+
+<p>In general, most of my assertions were right on an interface level,
+but wrong on an implementation level. Is this a good mental model? I
+think so. Unless you are building a real computer it’s good enough,
+conceptually. You could also, theoretically at least, build a computer
+using the tools given to you in Nand to Tetris that would be similar
+to an Intel machine from the early 80s, which isn’t that bad.</p>
+
+<p>In the next part we’ll move higher up the stack, looking at machine
+language, computer architecture and an assembler.</p>
+
+</div>
+</div>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-62506585-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+<script>document.write('<script src="http://'
+        + (location.host || 'localhost').split(':')[0]
+		+ ':1313/livereload.js?mindelay=10"></'
+        + 'script>')</script></body>
+</html>
+
