@@ -6,8 +6,137 @@
     <description>Recent content on Experi</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 29 May 2015 19:00:00 +0200</lastBuildDate>
+    <lastBuildDate>Sun, 07 Jun 2015 18:00:00 +0200</lastBuildDate>
     <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Instadoc - quick access to documentation</title>
+      <link>http://localhost:1313/instadoc/</link>
+      <pubDate>Sun, 07 Jun 2015 18:00:00 +0200</pubDate>
+      
+      <guid>http://localhost:1313/instadoc/</guid>
+      <description>
+
+&lt;p&gt;If you program in multiple languages, you probably don&amp;rsquo;t know every
+language&amp;rsquo;s core functions and standard library by heart. Being able to
+look up documentation and source code quickly is vital for staying in
+the flow. Here&amp;rsquo;s a test: can you look up your language&amp;rsquo;s documentation
+in less than 10 seconds?&lt;/p&gt;
+
+&lt;p&gt;In Clojure I&amp;rsquo;ve always found
+&lt;a href=&#34;https://clojure.github.io/clojure/clojure.repl-api.html&#34;&gt;clojure.repl&lt;/a&gt;
+to be extremely useful in looking up documentation, source code and to
+search for functions using &lt;code&gt;apropos&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Of course, you can always use online resources to look up
+documentation. While useful, they require you to be online, are
+sometimes confusing, and it can sometimes take a while to find things;
+it&amp;rsquo;s not uncommon that looking something up online breaks my flow.&lt;/p&gt;
+
+&lt;h2 id=&#34;hypothesis:46ce418605f3a770af379bf3a9c68ef4&#34;&gt;Hypothesis&lt;/h2&gt;
+
+&lt;p&gt;Ten seconds is a somewhat arbitrary limit, but I chose it for a
+specific reason: it&amp;rsquo;s widely seen as the limit for
+&lt;a href=&#34;http://www.nngroup.com/articles/response-times-3-important-limits/&#34;&gt;keeping a user&amp;rsquo;s attention&lt;/a&gt;. While
+that research was done for more passive tasks, I thought it was a good
+starting point. For example, if you have to type something really
+complicated to get the source code of a function, I&amp;rsquo;m much less likely
+to do it. Here&amp;rsquo;s my hypothesis, formalized:&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;In most languages you can look up documentation and source code in
+less than ten seconds, using built-in, offline tools.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;Additionally, I was interested in looking up examples and finding
+code, i.e. search / apropos.&lt;/p&gt;
+
+&lt;p&gt;When I say ten seconds, the important thing isn&amp;rsquo;t the absolute time,
+but rather that it takes a very short period of time. For example,
+writing &lt;code&gt;man strncpy&lt;/code&gt; in a terminal, or evaluating &lt;code&gt;(apropos &amp;quot;byte&amp;quot;)&lt;/code&gt;
+in a Clojure REPL gives you results almost instantly (it still takes
+some effort to type though, and there are tools in Clojureland that
+gives you documentation of a function as you mouse-over it, which
+takes less than 0.1 seconds and is thus perceived as happening
+instantaneously).&lt;/p&gt;
+
+&lt;h2 id=&#34;results:46ce418605f3a770af379bf3a9c68ef4&#34;&gt;Results&lt;/h2&gt;
+
+&lt;p&gt;I took a look at a few languages I have used. There are probably
+errors in the following table, and I would love to be corrected. I
+found no dedicated tools for code examples, instead they are often put
+at the end of the documentation string, if there are any at all.&lt;/p&gt;
+
+&lt;p&gt;Here are the preliminary results:&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Language&lt;/th&gt;
+&lt;th&gt;Shell&lt;/th&gt;
+&lt;th&gt;REPL&lt;/th&gt;
+&lt;th&gt;Source&lt;/th&gt;
+&lt;th&gt;Search&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;Python&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;pydoc&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;help&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;inspect&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;pydoc&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;Clojure&lt;/td&gt;
+&lt;td&gt;No&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;clojure.repl&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;clojure.repl&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;clojure.repl&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;Scala&lt;/td&gt;
+&lt;td&gt;No&lt;/td&gt;
+&lt;td&gt;No&lt;/td&gt;
+&lt;td&gt;No&lt;/td&gt;
+&lt;td&gt;No&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;Go&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;godoc&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;N/A&lt;/td&gt;
+&lt;td&gt;No&lt;/td&gt;
+&lt;td&gt;No&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;C&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;man&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;N/A&lt;/td&gt;
+&lt;td&gt;No&lt;/td&gt;
+&lt;td&gt;No&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;I put up a live spreadsheet that you can see and edit
+&lt;a href=&#34;http://experiments.oskarth.com/instadoc-live/&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&#34;conclusion:46ce418605f3a770af379bf3a9c68ef4&#34;&gt;Conclusion&lt;/h2&gt;
+
+&lt;p&gt;It&amp;rsquo;s probably too early to draw any real conclusions from the limited
+data, but I was surprised to find out how hard it seems to be to find
+source code in Scala, Go and C, and that Scala&amp;rsquo;s offline documentation
+is so bad.&lt;/p&gt;
+
+&lt;p&gt;Regardless, I hope this very incomplete list is useful for someone,
+and hopefully it can serve as a starting list for a more complete
+collection of getting documentation more quickly. I will update this
+post as I get more data.&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Nand to Tetris 2</title>

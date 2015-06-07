@@ -1,0 +1,10 @@
+<html>
+  <body>
+  <h1> Can you look up your language's documentation in less than 10 seconds? </h1>
+  <p>Edit the spreadsheet <a href="https://docs.google.com/spreadsheets/d/1vs4Kj49Uq_4RBXPs3-fwe5rLDc4xfSDpFrPg8wDOMu4/edit?usp=sharing">here</a>.
+  </p>
+  
+  <iframe width="100%" height="80%"
+  src="https://docs.google.com/spreadsheets/d/1vs4Kj49Uq_4RBXPs3-fwe5rLDc4xfSDpFrPg8wDOMu4/pubhtml?widget=true&amp;headers=false" </iframe>
+</body>
+</html>
