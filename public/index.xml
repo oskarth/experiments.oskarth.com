@@ -39,15 +39,15 @@ it&amp;rsquo;s not uncommon that looking something up online breaks my flow.&lt;
 specific reason: it&amp;rsquo;s widely seen as the limit for
 &lt;a href=&#34;http://www.nngroup.com/articles/response-times-3-important-limits/&#34;&gt;keeping a user&amp;rsquo;s attention&lt;/a&gt;. While
 that research was done for more passive tasks, I thought it was a good
-starting point. For example, if you have to type something really
+starting point. For example, if I have to type something really
 complicated to get the source code of a function, I&amp;rsquo;m much less likely
-to do it. Here&amp;rsquo;s my hypothesis, formalized:&lt;/p&gt;
+to do it. Here&amp;rsquo;s my hypothesis:&lt;/p&gt;
 
 &lt;p&gt;&lt;em&gt;In most languages you can look up documentation and source code in
 less than ten seconds, using built-in, offline tools.&lt;/em&gt;&lt;/p&gt;
 
 &lt;p&gt;Additionally, I was interested in looking up examples and finding
-code, i.e. search / apropos.&lt;/p&gt;
+code, i.e. search a.k.a. apropos.&lt;/p&gt;
 
 &lt;p&gt;When I say ten seconds, the important thing isn&amp;rsquo;t the absolute time,
 but rather that it takes a very short period of time. For example,

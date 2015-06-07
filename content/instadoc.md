@@ -27,15 +27,15 @@ Ten seconds is a somewhat arbitrary limit, but I chose it for a
 specific reason: it's widely seen as the limit for
 [keeping a user's attention](http://www.nngroup.com/articles/response-times-3-important-limits/). While
 that research was done for more passive tasks, I thought it was a good
-starting point. For example, if you have to type something really
+starting point. For example, if I have to type something really
 complicated to get the source code of a function, I'm much less likely
-to do it. Here's my hypothesis, formalized:
+to do it. Here's my hypothesis:
 
 *In most languages you can look up documentation and source code in
 less than ten seconds, using built-in, offline tools.*
 
 Additionally, I was interested in looking up examples and finding
-code, i.e. search / apropos.
+code, i.e. search a.k.a. apropos.
 
 When I say ten seconds, the important thing isn't the absolute time,
 but rather that it takes a very short period of time. For example,
