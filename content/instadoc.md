@@ -62,6 +62,7 @@ Here are the preliminary results:
 | Scala    | No      | No             | No             | No             |
 | Go       | `godoc` | N/A            | No             | No             |
 | C        | `man`   | N/A            | No             | No             |
+| Perl     | `perldoc` | N/A          | `perldoc`      | `perldoc`      |
 
 I put up a live spreadsheet that you can see and edit
 [here](http://experiments.oskarth.com/instadoc-live/).

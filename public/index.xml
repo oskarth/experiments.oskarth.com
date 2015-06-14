@@ -6,8 +6,99 @@
     <description>Recent content on Experi</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 07 Jun 2015 18:00:00 +0200</lastBuildDate>
+    <lastBuildDate>Sun, 14 Jun 2015 13:21:00 +0200</lastBuildDate>
     <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Writing A Lisp Interpreter</title>
+      <link>http://localhost:1313/lisp-interpreter/</link>
+      <pubDate>Sun, 14 Jun 2015 13:21:00 +0200</pubDate>
+      
+      <guid>http://localhost:1313/lisp-interpreter/</guid>
+      <description>
+
+&lt;p&gt;I&amp;rsquo;ve always really liked Lisp as a programming language, but I&amp;rsquo;ve yet to write
+an interpreter for the language. This week I decided to change that.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Hypothesis:&lt;/strong&gt; I can write a lisp interpreter in under 500 LOCs and in under a
+week.&lt;/p&gt;
+
+&lt;p&gt;Since the beginning of last week I&amp;rsquo;ve been keeping a &lt;a href=&#34;https://twitter.com/oskarth/status/608397165925437441&#34;&gt;code journal&lt;/a&gt;. To give you a
+feel for process so far of this project, I&amp;rsquo;m posting some excerpts from it
+related to this project.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Tuesday&lt;/strong&gt;&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;I&amp;rsquo;m working on my own little Lisp interpreter, based on the one described in SICP. My goal is to get it to a reasonable state by the end of this week, and then we&amp;rsquo;ll see.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;strong&gt;Wednesday&lt;/strong&gt;&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;I got stuck in a code mess where I had a bad mental model of what was happening when I was encoding and calling built-in primitive functions. I decided to start over using LISP 1.5 Programmer&amp;rsquo;s Manual and a legal pad.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;strong&gt;Friday&lt;/strong&gt;&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;Earlier I had started with the eval and apply functions, and then tried to add the environment and all the other &amp;ldquo;details&amp;rdquo;, such as primitive procedures and their bindings, ad hoc. This meant that I often didn&amp;rsquo;t have working code, and my mental model suffered as a result.&lt;/p&gt;
+
+&lt;p&gt;Today I started from the bottom-up, which is generally a much better way to do Lisp programming, so my confidence in the code and its workings grew. When I found bugs, I knew almost straight away where the problem was.&lt;/p&gt;
+
+&lt;p&gt;I can now evaluate basic lambdas with proper scoping. The biggest problem was to reconcile the lack of mutable cons cells in Racket with the design SICP has for its environment model. I wasted a lot of time using mutable-cons, which infected the rest of my program. Eventually I decided to remove definitions and assignments, until I figured out how to deal with this mismatch. I also haven&amp;rsquo;t implemented conditionals yet.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;strong&gt;Saturday&lt;/strong&gt;&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;I saw someone on Github who solved the issue with mutable pairs. Essentially it was the same as what I had done, with the addition of a function that converts all user input lists to mutable lists, along with a convenience macro that allows us to use mcadr, and other nested access functions. This strikes me as a hack that works, but not as the right solution.&lt;/p&gt;
+
+&lt;p&gt;After talking to some helpful people on IRC, especially technomancy of Leiningen and Atreus fame, I got some pointers on how to approach the problem. I decided to keep the local environment immutable, and just create a hash-map for the mutable top-level, for defining functions and such.&lt;/p&gt;
+
+&lt;p&gt;I also gave the lisp interpreter a real name: Sai. It&amp;rsquo;s my little celebration of to the spirit in the machine. I&amp;rsquo;d like to keep working on it more - for example, I&amp;rsquo;d like to implement a macro system and play around with that. We&amp;rsquo;ll see if or
+when time permits.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;Here are two basic program that demonstrates functions, definitions, conditionals,
+scoping, and basic data types.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(((lambda (x) (lambda (y) (+ x y))) 3) 4) ; =&amp;gt; 7
+
+(define (append x y)
+  (if (null? x)
+    y
+    (cons (car x) (append (cdr x) y))))
+
+(append &#39;(a b c) &#39;(d e f)) ; =&amp;gt; &#39;(a b c d e f)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Sai is on Github &lt;a href=&#34;https://github.com/oskarth/sai&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&#34;conclusion-and-future-work:dd9cfdd1a70152eeed1ac2dbb9a57cf1&#34;&gt;Conclusion and future work&lt;/h2&gt;
+
+&lt;p&gt;Yes, it was possible, and it ended up being less than 200 lines of code. It&amp;rsquo;s
+very rudimentary and don&amp;rsquo;t support a lot, so that number doesn&amp;rsquo;t mean that much.&lt;/p&gt;
+
+&lt;p&gt;Of course, since I was mostly following the path laid out in SICP it&amp;rsquo;s not that
+surprising. But I do know a lot more now than I knew a week ago, and I&amp;rsquo;ve a
+feeling this project helped with my intution for how programming languages work.&lt;/p&gt;
+
+&lt;p&gt;There&amp;rsquo;s a few different things I&amp;rsquo;d like to play around with: implementing a
+macro system, Clojure-like data structures, minimizing the amount of primitives
+in the eval function, write some real programs in it, write the interpreter in a
+different language, etc.&lt;/p&gt;
+
+&lt;p&gt;There&amp;rsquo;s a lot to do and I&amp;rsquo;ve barely scratched the surface of programming
+language design, but so far it&amp;rsquo;s been very fun and rewarding, and I recommend you
+to implement your own lisp interpreter!&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;P.S. I might change the format of this experimental journal. For example, I
+might change the posting frequency to every other week, or write about one
+experiment for several weeks in a row. If you have any thoughts on what kind of
+format you think would be interesting to read, please let me know. D.S.&lt;/em&gt;&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Instadoc - quick access to documentation</title>
@@ -117,6 +208,14 @@ at the end of the documentation string, if there are any at all.&lt;/p&gt;
 &lt;td&gt;N/A&lt;/td&gt;
 &lt;td&gt;No&lt;/td&gt;
 &lt;td&gt;No&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;Perl&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;perldoc&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;N/A&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;perldoc&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;perldoc&lt;/code&gt;&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
