@@ -6,8 +6,101 @@
     <description>Recent content on Experi</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 14 Jun 2015 13:21:00 +0200</lastBuildDate>
+    <lastBuildDate>Tue, 16 Jun 2015 15:27:47 +0200</lastBuildDate>
     <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Making an OS in 30 days - part 0</title>
+      <link>http://localhost:1313/unix0/</link>
+      <pubDate>Tue, 16 Jun 2015 15:27:47 +0200</pubDate>
+      
+      <guid>http://localhost:1313/unix0/</guid>
+      <description>
+
+&lt;p&gt;With this post I&amp;rsquo;m annonucing the OS in 30 day challenge. This is day 0 of my attempt to work through MIT&amp;rsquo;s &lt;a href=&#34;http://pdos.csail.mit.edu/6.828/2014/index.html&#34;&gt;6.828: Operating System Engineering&lt;/a&gt;, extending xv6 and implementing the JOS operating system.&lt;/p&gt;
+
+&lt;p&gt;I realized last week how much more productive one when there&amp;rsquo;s a single project
+that&amp;rsquo;s on the &lt;a href=&#34;http://www.paulgraham.com/top.html&#34;&gt;top of your mind&lt;/a&gt;. So I
+decided to cancel most (but not all) of my commitments over the next month or
+so. Excluding travel days, EuroClojure, coaching ClojureBridge, and visiting
+family, I&amp;rsquo;m cancelling almost all of my other commitments until the end of July.
+This leaves me with exactly 30 full work days, starting tomorrow. The important
+thing though isn&amp;rsquo;t the precise number of days but rather the commitment and
+deadline.&lt;/p&gt;
+
+&lt;h2 id=&#34;what-are-you-gonna-do-exactly:82cab24b2c7cc24bac4d101b4b118510&#34;&gt;What are you gonna do exactly?&lt;/h2&gt;
+
+&lt;p&gt;I&amp;rsquo;m gonna do the homework and lab assignments that people at MIT normally do
+when they take this course. The first part of the course is about extending xv6
+- xv6 is a &amp;ldquo;simple, Unix-like teaching operating system&amp;rdquo;, that&amp;rsquo;s based on UNIX
+v6, but implemented in C. The second part of the course consist of making an OS
+called JOS, which is supposed to teach you some modern operating system
+concepts.&lt;/p&gt;
+
+&lt;h2 id=&#34;why-are-you-doing-this:82cab24b2c7cc24bac4d101b4b118510&#34;&gt;Why are you doing this?&lt;/h2&gt;
+
+&lt;p&gt;When I quit my last job, I asked the CTO, a programmer whose ability I highly
+respect, what he thought were my biggest weaknesses as a programmer. His answer
+was clear: systems programming and type systems.&lt;/p&gt;
+
+&lt;p&gt;On the late Richard Feynman&amp;rsquo;s blackboard you can read: &lt;em&gt;Know how to solve every
+problem that has ever been solved&lt;/em&gt; and &lt;em&gt;What I can&amp;rsquo;t create I don&amp;rsquo;t understand&lt;/em&gt;.
+This is of course just an ambition. And while I don&amp;rsquo;t share his ambition for
+being able to solve every problem that has ever been solved, I think he&amp;rsquo;s spot
+on when it comes to achieving deep understanding. Consider this my attempt at
+grokking systems programming.&lt;/p&gt;
+
+&lt;p&gt;C and UNIX have been around for 30 years and they are likely to be around in
+another 30 years. While I don&amp;rsquo;t have much experience writing C, I have a lot of
+respect for it as an abstraction. Together with Lisp, it strikes me as cleanest
+model of programming that exists (I took that one from &lt;a href=&#34;http://www.paulgraham.com/rootsoflisp.html&#34;&gt;Paul
+Graham&lt;/a&gt;).&lt;/p&gt;
+
+&lt;h2 id=&#34;cool-tell-me-more:82cab24b2c7cc24bac4d101b4b118510&#34;&gt;Cool, tell me more.&lt;/h2&gt;
+
+&lt;p&gt;I have no idea what I&amp;rsquo;m getting myself into. This book is based on a course at
+MIT, 6.828. This course has, among other things, a pre-requisite of the material
+in course 6.033 which in turn has a pre-requisite 6.004 (which I know probably
+less than 50% of). I guess that means: better get to work. Is it feasible? I
+guess I&amp;rsquo;ll find out soon enough.&lt;/p&gt;
+
+&lt;p&gt;So why have a deadline? A clear goal makes it easier. The worst thing that can
+happen is that I fail miserably, and then I can figure out why. I doubt I&amp;rsquo;ll
+spend the rest of my software life working on operating systems, but I&amp;rsquo;d like to
+have some understanding of how they work.&lt;/p&gt;
+
+&lt;p&gt;For people who are interested in following along, it might helpful to know where
+I stand, skill-wise. Here&amp;rsquo;s some things that I have already:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;General programming skills, especially Lisp and web-related things.&lt;/li&gt;
+&lt;li&gt;Familiarity with Linux/FreeBSD, including very basic scripting skills.&lt;/li&gt;
+&lt;li&gt;Done the first part of the Nand to Tetris book (estimated 50 hours effort).&lt;/li&gt;
+&lt;li&gt;Familiarity with C (but really not a whole lot).&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;how-can-i-follow-along-how-can-i-help:82cab24b2c7cc24bac4d101b4b118510&#34;&gt;How can I follow along / How can I help?&lt;/h2&gt;
+
+&lt;p&gt;Every day I&amp;rsquo;ll put out an entry in my code journal that&amp;rsquo;s max 200 words. This is
+where I write about what I got done that day. The preferred way to consume this
+is with curl: &lt;code&gt;curl http://plan.oskarth.com/8&lt;/code&gt;, but a normal web browser works
+&lt;a href=&#34;http://plan.oskarth.com/8&#34;&gt;too&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Every week I&amp;rsquo;ll teach some concept in a post that&amp;rsquo;s around 1000 words long. For
+these posts I&amp;rsquo;m going to imagine that a friend of mine is doing the same thing
+and is a few days behind, and I&amp;rsquo;m trying to teach him or her concepts.&lt;/p&gt;
+
+&lt;p&gt;If you have some ideas of things you&amp;rsquo;d like to read about, please let me know
+via email or twitter. And if you have knowledge of the material and want to
+help, let me know and I&amp;rsquo;ll bombard you with questions!&lt;/p&gt;
+
+&lt;h2 id=&#34;starting-tomorrow:82cab24b2c7cc24bac4d101b4b118510&#34;&gt;Starting tomorrow&lt;/h2&gt;
+
+&lt;p&gt;How hard can it be? I have no idea. Let&amp;rsquo;s find out.&lt;/p&gt;
+
+&lt;p&gt;I&amp;rsquo;m excited. Let&amp;rsquo;s get started!&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Writing A Lisp Interpreter</title>
