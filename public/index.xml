@@ -17,11 +17,19 @@
       <guid>http://localhost:1313/xv6-1/</guid>
       <description>
 
-&lt;p&gt;This is my first post in a series on grokking xv6, a simple unix teaching
-operating-system based on UNIX. &lt;em&gt;To grok something&lt;/em&gt; means to understand it
-intuitively or empathetically.&lt;/p&gt;
+&lt;p&gt;This is my first post in a series on grokking xv6, a simple Unix-like teaching
+operating-system. &lt;em&gt;To grok something&lt;/em&gt; means to understand it intuitively or
+empathetically.&lt;/p&gt;
 
-&lt;p&gt;xv6 was developed based on&lt;/p&gt;
+&lt;p&gt;xv6 is a modern rewrite of Unix V6, the first Unix that was published outside of
+Bell Labs, and John Lion&amp;rsquo;s commentary of its source code. It consist of a text
+and the source code. In total the source is under 10 000 lines of code, and the
+book is under a 100 pages. You can find more out more at the MIT&amp;rsquo;s Operating
+Systems Engineering &lt;a href=&#34;http://pdos.csail.mit.edu/6.828/2014/xv6.html&#34;&gt;class
+website&lt;/a&gt;, which is wherexv6 was
+written.&lt;/p&gt;
+
+&lt;h2 id=&#34;motivation:6e4e74ce3d77a35b9a9c8e804e0fd799&#34;&gt;Motivation&lt;/h2&gt;
 
 &lt;p&gt;When I quit my last job, I asked the CTO, a programmer whose ability I highly
 respect, what he thought were my biggest weaknesses as a programmer. His answer
@@ -41,135 +49,66 @@ respect for it as an abstraction. Together with Lisp, it strikes me as cleanest
 model of programming that exists (I took that one from &lt;a href=&#34;http://www.paulgraham.com/rootsoflisp.html&#34;&gt;Paul
 Graham&lt;/a&gt;).&lt;/p&gt;
 
-&lt;h2 id=&#34;hypothesis:6e4e74ce3d77a35b9a9c8e804e0fd799&#34;&gt;Hypothesis&lt;/h2&gt;
+&lt;p&gt;Regardless of what end up doing as a programmer, it&amp;rsquo;s extremely helpful to have
+a grasp of the fundamentals. UNIX and its philsosophy has such a huge influence
+on programming at large, that you can&amp;rsquo;t not do something that it touches. Even
+if you are making a web app, once it reaches a certain size you are bound to run
+into issues that have already been studied at length before in the world of
+operating systems.&lt;/p&gt;
+
+&lt;h2 id=&#34;hypotheses:6e4e74ce3d77a35b9a9c8e804e0fd799&#34;&gt;Hypotheses&lt;/h2&gt;
+
+&lt;p&gt;&lt;strong&gt;1. With dedicated study, I&amp;rsquo;ll be able to grok xv6 in about a month.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;To make the concept of grokkking more concrete:&lt;/p&gt;
 
 &lt;ul&gt;
-&lt;li&gt;&lt;p&gt;With dedicated study, I will be able to understand every single line in xv6.&lt;/p&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;By&lt;/p&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;It&amp;rsquo;s possible to learn the xv6 source with just a few weeks of dedicated
-study.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;understand every single line in the source code.&lt;/li&gt;
+&lt;li&gt;teach it or parts of it to someone else.&lt;/li&gt;
+&lt;li&gt;rewrite or extend parts of the source code.&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;By learn xv6 we mean&lt;/p&gt;
+&lt;p&gt;The first will be more of a qualitative test to apply to myself, I aim to do the
+second in these posts, and the third will be done with the help of MIT&amp;rsquo;s 6.828
+&lt;a href=&#34;http://pdos.csail.mit.edu/6.828/2014/schedule.html&#34;&gt;homework&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;2. After grokking xv6 I&amp;rsquo;ll have a firm grasp of fundamental OS concepts.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;This can be tested by:&lt;/p&gt;
 
 &lt;ul&gt;
-&lt;li&gt;After grokking xv6 you&amp;rsquo;ll have a firm grasp of fundamental OS concepts.
-&amp;ndash; Enough to contribute a patch to Linux or FreeBSD.
-&amp;ndash; To understand modern OSs.&lt;/li&gt;
+&lt;li&gt;ability to understand modern operating systems.&lt;/li&gt;
+&lt;li&gt;contributing a patch to a modern OS like Linux or FreeBSD.&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;Get to first patch.&lt;/p&gt;
+&lt;p&gt;See this HN &lt;a href=&#34;https://news.ycombinator.com/item?id=4599048&#34;&gt;comment&lt;/a&gt; for why the
+second wouldn&amp;rsquo;t be as unreasonable of a goal as it may appear at first.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;3. After grokking xv6 I&amp;rsquo;ll have developed working knowledge of C.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;This can be tested by understanding and / or contributing to a non-trivial open
+source projects written in C.&lt;/p&gt;
+
+&lt;h2 id=&#34;methodology:6e4e74ce3d77a35b9a9c8e804e0fd799&#34;&gt;Methodology&lt;/h2&gt;
+
+&lt;p&gt;In future posts I will choose something specific to teach and focus each post on
+that. In that sense it can best be seen as one long post, with this being the
+introduction. After having finished with the xv6, I&amp;rsquo;ll write some sort of
+conclusion. In other words, this experiment is a work in progress.&lt;/p&gt;
+
+&lt;p&gt;If you wish to follow along, you can do so on a weekly basis here. You can also
+read my code journal, which is where I write what code I&amp;rsquo;ve written every day,
+at &lt;code&gt;curl plan.oskarth.com/N&lt;/code&gt;, where N is the number visible at &lt;code&gt;curl
+plan.oskarth.com&lt;/code&gt;. All the code is at my
+&lt;a href=&#34;https://github.com/oskarth/xv6&#34;&gt;github&lt;/a&gt;.&lt;/p&gt;
 
 &lt;h2 id=&#34;experiment:6e4e74ce3d77a35b9a9c8e804e0fd799&#34;&gt;Experiment&lt;/h2&gt;
 
+&lt;p&gt;I&amp;rsquo;m going to try to explain the shell and some of its operations today.&lt;/p&gt;
+
+&lt;p&gt;What is the &lt;em&gt;shell&lt;/em&gt;?&lt;/p&gt;
+
 &lt;h2 id=&#34;conclusion:6e4e74ce3d77a35b9a9c8e804e0fd799&#34;&gt;Conclusion&lt;/h2&gt;
-
-&lt;h2 id=&#34;code-journal-stuff:6e4e74ce3d77a35b9a9c8e804e0fd799&#34;&gt;Code journal stuff&lt;/h2&gt;
-
-&lt;p&gt;Slow day today. A bunch of half-assed attempts at various projects I&amp;rsquo;ve been
-meaning to do, but no real progress.&lt;/p&gt;
-
-&lt;p&gt;I also started reading the xv6 book - &amp;ldquo;a simple, Unix-like teaching operating
-system&amp;rdquo;.  Getting started with xv6, a simple Unix-like teaching operating system&lt;/p&gt;
-
-&lt;p&gt;Not a lot of coding done today; spent a bunch of time debugging compiler
-toolchain things for xv6. Got it to compile by setting up a small VPS with Linux
-on it instead of messing around with custom builds of gcc.&lt;/p&gt;
-
-&lt;p&gt;Reviewed some shell basics. Apparently there are 382 words in the standard
-dictionary that have no a, e, i, o, or u. That&amp;rsquo;s pretty cool.&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;grep -Ev &amp;lsquo;a|A|e|E|i|I|o|O|u|U&amp;rsquo; /usr/share/dict/words | wc -l&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;I started doing the shell homework and realized I needed to brush up on (or,
-                                                                          rather,
-                                                                          learn)
-C. Looked into the course that xv6 is based on and its prerequisites and here&amp;rsquo;s
-what I found:&lt;/p&gt;
-
-&lt;p&gt;The xv6 booklet is based on the Operating System Engineering course at MIT,
-6.828.  This course has, among other things, a pre-requisite of the material in
-course 6.033 which in turn has a strong pre-requisite 6.004 (which I know
-                                                                   probably less
-                                                                   than 50% of).
-Yelp! Better get to work.&lt;/p&gt;
-
-&lt;p&gt;Tomorrow I&amp;rsquo;ll get started coding for real and post more about this project and
-why I&amp;rsquo;m doing it in my Experiments Journal. Stay tuned.&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;get xv6 to compile
-Learning C and xv6&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;Reviewed K&amp;amp;R today and did a speed-tour of the first half of the book, writing
-some small programs in C and taking notes of constructs I was using that I
-wasn&amp;rsquo;t 100% sure on. For example: prefix vs postfix incrementor, pointers, array
-initialization and nil-termination.&lt;/p&gt;
-
-&lt;p&gt;I&amp;rsquo;ve started deep diving into the xv6 source code and booklet, starting with the
-shell file as an entry point, looking up any constructs I don&amp;rsquo;t understand with
-K&amp;amp;R, man pages, SO, etc. It&amp;rsquo;s a lot of work but I&amp;rsquo;m slowly and surely getting an
-understanding of the code.&lt;/p&gt;
-
-&lt;p&gt;Here&amp;rsquo;s another grepism to find all occurrences of fgets in pwd and subdirs, in
-.c and .h files:&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;grep -r &amp;ndash;include=*.{c,h} fgets .&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;(The reason grep -r fgets *.c *.h doesn&amp;rsquo;t work is because it expands the
-     filenames before searching recursively.)&lt;/p&gt;
-
-&lt;p&gt;Instead of doing an announcement-style post over at Experi, I decided to just
-wait until I had made some more progress with the actual coding. The first post
-will be in a few days.&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;write small programs in C from K&amp;amp;R: wc, strlen, swap.  complete exec function&lt;/li&gt;
-&lt;li&gt;in xv6 shell
-get xv6 shell to redir and pipe More on the xv6 shell&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;Today I implemented redir, which allows you to write things like &amp;ldquo;ls &amp;gt; y&amp;rdquo;. It&amp;rsquo;s
-pretty neat how it works. Here&amp;rsquo;s the relevant code:&lt;/p&gt;
-
-&lt;p&gt;rcmd = (struct redircmd*)cmd; close(rcmd-&amp;gt;fd); if (open(rcmd-&amp;gt;file, rcmd-&amp;gt;mode)
-&amp;lt; 0) { fprintf(stderr, &amp;ldquo;open %s failed\n&amp;rdquo;, rcmd-&amp;gt;file); } runcmd(rcmd-&amp;gt;cmd);&lt;/p&gt;
-
-&lt;p&gt;We close the file with the relevant file descriptor, either 0 for STIDN or 1 for
-STDOUT. When we open the file we are redirected to it&amp;rsquo;ll be assigned the lowest
-file descriptor, which is the one we just closed. Once that&amp;rsquo;s done we simply run
-the desired command.&lt;/p&gt;
-
-&lt;p&gt;To avoid having to write &amp;ldquo;/bin/ls&amp;rdquo; and instead just be able to write &amp;ldquo;ls&amp;rdquo; I
-wrote the following mini PATH logic. It&amp;rsquo;s not great but it&amp;rsquo;ll have to suffice
-for now. It took me a while to understand how to use strcat, primarily because
-my mental model of memory management was wrong.&lt;/p&gt;
-
-&lt;p&gt;char fullpath[100] = &amp;ldquo;/bin/&amp;rdquo;; strcat(fullpath, ecmd-&amp;gt;argv[0]); if(ecmd-&amp;gt;argv[0]
-== 0) exit(0);
-// First we try current directiory, then /bin/
-execv(ecmd-&amp;gt;argv[0], ecmd-&amp;gt;argv); execv(fullpath, ecmd-&amp;gt;argv);&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;xv6 shell redir xv6 shell check in /bin/ dir too
-xv6 shell pipe run xv6 with qemu Implemented pipes. Done with shell part.&lt;/p&gt;&lt;/li&gt;
-
-&lt;li&gt;&lt;p&gt;look in /usr/bin too xv6 shell pipes work
-boot xv7 Use QEMU as a &amp;ldquo;remote debugging target&amp;rdquo; for GDB.&lt;/p&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;Without X or w/o virtual VGA.&lt;/p&gt;
-
-&lt;p&gt;make sure have gdb first?&lt;/p&gt;
-
-&lt;p&gt;make qemu-nox make qemu-nox-gdb&lt;/p&gt;
 </description>
     </item>
     
