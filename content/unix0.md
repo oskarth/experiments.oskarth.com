@@ -1,22 +1,30 @@
 +++
 date = "2015-06-16T15:27:47+02:00"
 draft = true
-title = "Making an OS in 30 days - part 0"
+title = "xv6 shell"
 
 +++
 
-With this post I'm annonucing the OS in 30 day challenge. This is day 0 of my attempt to work through MIT's [6.828: Operating System Engineering](http://pdos.csail.mit.edu/6.828/2014/index.html), extending xv6 and implementing the JOS operating system.
+This week I started diving into xv6, which is a simple teaching operating-system
+based on UNIX b6. There's a nice booklet and the code is on the order of 10 000
+lines of codes.
+
 
 <!--more-->
 
-I realized last week how much more productive one when there's a single project
-that's on the [top of your mind](http://www.paulgraham.com/top.html). So I
-decided to cancel most (but not all) of my commitments over the next month or
-so. Excluding travel days, EuroClojure, coaching ClojureBridge, and visiting
-family, I'm cancelling almost all of my other commitments until the end of July.
-This leaves me with exactly 30 full work days, starting tomorrow. The important
-thing though isn't the precise number of days but rather the commitment and
-deadline.
+# Old post
+1. Less focus on course.
+2. More big on why.
+3. More on teach one thing
+
+With this post I'm announcing the OS in 30 day challenge. This is day 0 of my attempt to work through MIT's [6.828: Operating System Engineering](http://pdos.csail.mit.edu/6.828/2014/index.html), extending xv6 and implementing the JOS operating system.
+
+I realized last week how much more productive one is when there's a single
+project that's on the [top of your mind](http://www.paulgraham.com/top.html).
+Excluding travel days, EuroClojure, coaching ClojureBridge, and visiting family,
+I'm canceling almost all of my other commitments until the end of July. This
+leaves me with exactly 30 full work days, starting tomorrow. The important thing
+though isn't the precise number of days but rather the commitment and deadline.
 
 ## What are you gonna do exactly?
 
@@ -46,7 +54,7 @@ respect for it as an abstraction. Together with Lisp, it strikes me as cleanest
 model of programming that exists (I took that one from [Paul
 Graham](http://www.paulgraham.com/rootsoflisp.html)).
 
-## Cool, tell me more.
+## Tell me more.
 
 I have no idea what I'm getting myself into. This book is based on a course at
 MIT, 6.828. This course has, among other things, a pre-requisite of the material
@@ -82,7 +90,7 @@ If you have some ideas of things you'd like to read about, please let me know
 via email or twitter. And if you have knowledge of the material and want to
 help, let me know and I'll bombard you with questions!
 
-## Starting tomorrow
+## Starting tomorrow.
 
 How hard can it be? I have no idea. Let's find out.
 

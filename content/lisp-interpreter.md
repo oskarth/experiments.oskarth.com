@@ -60,20 +60,21 @@ Sai is on Github [here](https://github.com/oskarth/sai).
 ## Conclusion and future work
 
 Yes, it was possible, and it ended up being less than 200 lines of code. It's
-very rudimentary and don't support a lot, so that number doesn't mean that much.
+very rudimentary and doesn't support a lot, so that number doesn't mean that
+much.
 
 Of course, since I was mostly following the path laid out in SICP it's not that
 surprising. But I do know a lot more now than I knew a week ago, and I've a
 feeling this project helped with my intution for how programming languages work.
 
-There's a few different things I'd like to play around with: implementing a
+There are a few different things I'd like to play around with: implementing a
 macro system, Clojure-like data structures, minimizing the amount of primitives
-in the eval function, write some real programs in it, write the interpreter in a
-different language, etc.
+in the eval function, writing some real programs in it, writing the interpreter
+in a different language, etc.
 
 There's a lot to do and I've barely scratched the surface of programming
-language design, but so far it's been very fun and rewarding, and I recommend you
-to implement your own lisp interpreter!
+language design, but so far it's been very fun and rewarding, and I recommend
+you to implement your own lisp interpreter!
 
 *P.S. I might change the format of this experimental journal. For example, I
 might change the posting frequency to every other week, or write about one
