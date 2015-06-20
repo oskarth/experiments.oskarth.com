@@ -6,15 +6,44 @@
     <description>Recent content on Experi</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 20 Jun 2015 16:00:25 +0200</lastBuildDate>
+    <lastBuildDate>Sat, 20 Jun 2015 19:38:21 +0200</lastBuildDate>
     <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
-      <title>Grokking xv6, Part 1</title>
-      <link>http://localhost:1313/xv6-1/</link>
+      <title>shell</title>
+      <link>http://localhost:1313/unix01/</link>
+      <pubDate>Sat, 20 Jun 2015 19:38:21 +0200</pubDate>
+      
+      <guid>http://localhost:1313/unix01/</guid>
+      <description>
+
+&lt;h2 id=&#34;what-is-a-shell:f09b8128b2cd6dc70217eeb5f2ae4fb1&#34;&gt;What is a shell?&lt;/h2&gt;
+
+&lt;p&gt;A &lt;em&gt;shell&lt;/em&gt; is just another &lt;em&gt;computer program&lt;/em&gt;. It is the main &lt;em&gt;user interface&lt;/em&gt; to
+&lt;em&gt;operating systems&lt;/em&gt; that are similar to &lt;em&gt;Unix&lt;/em&gt;. An operating system is
+responsible for having several programs run on one &lt;em&gt;computer&lt;/em&gt;, and also to tries
+to &lt;em&gt;abstract away&lt;/em&gt; (to draw away attention from) the specific &lt;em&gt;hardware&lt;/em&gt; the
+computer is running on, so the same program can run on many different types of
+computers. Unix is a special type of operating system that was developed at
+&lt;em&gt;Bell Labs&lt;/em&gt; (a special place where a lot of important computer things happened)
+by &lt;em&gt;programmers&lt;/em&gt; (people who make computers do what they want) like &lt;em&gt;Ken
+Thompson&lt;/em&gt;, &lt;em&gt;Dennis Ritchie&lt;/em&gt;, and &lt;em&gt;Brian Kernighan&lt;/em&gt;.&lt;/p&gt;
+
+&lt;p&gt;The shell lives in &lt;em&gt;user space&lt;/em&gt;, along with most other programs, as opposed to
+in &lt;em&gt;kernel space&lt;/em&gt;. The way it talks to the kernel is by &lt;em&gt;system calls&lt;/em&gt; (things
+you can tell the kernel to do).  These system calls allows the user to do things
+like open &lt;em&gt;files&lt;/em&gt; and create &lt;em&gt;processes&lt;/em&gt;.&lt;/p&gt;
+
+&lt;p&gt;A &lt;em&gt;system call&lt;/em&gt; is something you can tell the kernel to do.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Grokking xv6</title>
+      <link>http://localhost:1313/unix00/</link>
       <pubDate>Sat, 20 Jun 2015 16:00:25 +0200</pubDate>
       
-      <guid>http://localhost:1313/xv6-1/</guid>
+      <guid>http://localhost:1313/unix00/</guid>
       <description>
 
 &lt;p&gt;This is my first post in a series on grokking xv6, a simple Unix-like teaching
@@ -24,24 +53,24 @@ empathetically.&lt;/p&gt;
 &lt;p&gt;xv6 is a modern rewrite of Unix V6, the first Unix that was published outside of
 Bell Labs, and John Lion&amp;rsquo;s commentary of its source code. It consist of a text
 and the source code. In total the source is under 10 000 lines of code, and the
-book is under a 100 pages. You can find more out more at the MIT&amp;rsquo;s Operating
-Systems Engineering &lt;a href=&#34;http://pdos.csail.mit.edu/6.828/2014/xv6.html&#34;&gt;class
-website&lt;/a&gt;, which is wherexv6 was
-written.&lt;/p&gt;
+book is under 100 pages. You can find more out more at MIT&amp;rsquo;s Operating Systems
+Engineering &lt;a href=&#34;http://pdos.csail.mit.edu/6.828/2014/xv6.html&#34;&gt;class website&lt;/a&gt;,
+which is where xv6 was written.&lt;/p&gt;
 
-&lt;h2 id=&#34;motivation:6e4e74ce3d77a35b9a9c8e804e0fd799&#34;&gt;Motivation&lt;/h2&gt;
+&lt;h2 id=&#34;motivation:e5c1e941bdd2f8c7b7464f7c70353dd0&#34;&gt;Motivation&lt;/h2&gt;
 
 &lt;p&gt;When I quit my last job, I asked the CTO, a programmer whose ability I highly
 respect, what he thought were my biggest weaknesses as a programmer. His answer
 was clear: systems programming and type systems. What is systems programming?
 The short answer is: software that isn&amp;rsquo;t application software.&lt;/p&gt;
 
-&lt;p&gt;On the late Richard Feynman&amp;rsquo;s blackboard you can read: &lt;em&gt;Know how to solve every
-problem that has ever been solved&lt;/em&gt; and &lt;em&gt;What I cannot create I do not
-understand&lt;/em&gt;.  This is of course just an ambition. And while I don&amp;rsquo;t share his
-ambition for being able to solve every problem that has ever been solved, I
-think he&amp;rsquo;s spot on when it comes to achieving deep understanding. Consider this
-my attempt at grokking systems programming.&lt;/p&gt;
+&lt;p&gt;On the late Richard Feynman&amp;rsquo;s
+&lt;a href=&#34;http://caltech.discoverygarden.ca/islandora/object/ct1%3A483/datastream/JPG/view&#34;&gt;blackboard&lt;/a&gt;
+you can read: &lt;em&gt;Know how to solve every problem that has ever been solved&lt;/em&gt; and
+&lt;em&gt;What I cannot create I do not understand&lt;/em&gt;.  This is of course just an ambition.
+And while I don&amp;rsquo;t share his ambition for being able to solve every problem that
+has ever been solved, I think he&amp;rsquo;s spot on when it comes to achieving deep
+understanding. Consider this my attempt at grokking systems programming.&lt;/p&gt;
 
 &lt;p&gt;C and UNIX have been around for 30 years and they are likely to be around in
 another 30 years. While I don&amp;rsquo;t have much experience writing C, I have a lot of
@@ -49,23 +78,23 @@ respect for it as an abstraction. Together with Lisp, it strikes me as cleanest
 model of programming that exists (I took that one from &lt;a href=&#34;http://www.paulgraham.com/rootsoflisp.html&#34;&gt;Paul
 Graham&lt;/a&gt;).&lt;/p&gt;
 
-&lt;p&gt;Regardless of what end up doing as a programmer, it&amp;rsquo;s extremely helpful to have
-a grasp of the fundamentals. UNIX and its philsosophy has such a huge influence
-on programming at large, that you can&amp;rsquo;t not do something that it touches. Even
-if you are making a web app, once it reaches a certain size you are bound to run
-into issues that have already been studied at length before in the world of
-operating systems.&lt;/p&gt;
+&lt;p&gt;Regardless of what you end up doing as a programmer, it&amp;rsquo;s extremely helpful to
+have a grasp of the fundamentals. UNIX and its philosophy have such a huge
+influence on programming at large, there&amp;rsquo;s nothing you can do that they don&amp;rsquo;t
+touch. Even if you are making a web app, once it reaches a certain size you are
+bound to run into issues that have already been studied at length in the world
+of operating systems.&lt;/p&gt;
 
-&lt;h2 id=&#34;hypotheses:6e4e74ce3d77a35b9a9c8e804e0fd799&#34;&gt;Hypotheses&lt;/h2&gt;
+&lt;h2 id=&#34;hypotheses:e5c1e941bdd2f8c7b7464f7c70353dd0&#34;&gt;Hypotheses&lt;/h2&gt;
 
 &lt;p&gt;&lt;strong&gt;1. With dedicated study, I&amp;rsquo;ll be able to grok xv6 in about a month.&lt;/strong&gt;&lt;/p&gt;
 
-&lt;p&gt;To make the concept of grokkking more concrete:&lt;/p&gt;
+&lt;p&gt;To make the concept of grokking more concrete:&lt;/p&gt;
 
 &lt;ul&gt;
-&lt;li&gt;understand every single line in the source code.&lt;/li&gt;
-&lt;li&gt;teach it or parts of it to someone else.&lt;/li&gt;
-&lt;li&gt;rewrite or extend parts of the source code.&lt;/li&gt;
+&lt;li&gt;understand every single line in the source code&lt;/li&gt;
+&lt;li&gt;teach it or parts of it to someone else&lt;/li&gt;
+&lt;li&gt;rewrite or extend parts of the source code&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;p&gt;The first will be more of a qualitative test to apply to myself, I aim to do the
@@ -77,8 +106,8 @@ second in these posts, and the third will be done with the help of MIT&amp;rsquo
 &lt;p&gt;This can be tested by:&lt;/p&gt;
 
 &lt;ul&gt;
-&lt;li&gt;ability to understand modern operating systems.&lt;/li&gt;
-&lt;li&gt;contributing a patch to a modern OS like Linux or FreeBSD.&lt;/li&gt;
+&lt;li&gt;ability to understand modern operating systems&lt;/li&gt;
+&lt;li&gt;contributing a patch to a modern OS like Linux or FreeBSD&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;p&gt;See this HN &lt;a href=&#34;https://news.ycombinator.com/item?id=4599048&#34;&gt;comment&lt;/a&gt; for why the
@@ -87,28 +116,20 @@ second wouldn&amp;rsquo;t be as unreasonable of a goal as it may appear at first
 &lt;p&gt;&lt;strong&gt;3. After grokking xv6 I&amp;rsquo;ll have developed working knowledge of C.&lt;/strong&gt;&lt;/p&gt;
 
 &lt;p&gt;This can be tested by understanding and / or contributing to a non-trivial open
-source projects written in C.&lt;/p&gt;
+source project written in C.&lt;/p&gt;
 
-&lt;h2 id=&#34;methodology:6e4e74ce3d77a35b9a9c8e804e0fd799&#34;&gt;Methodology&lt;/h2&gt;
+&lt;h2 id=&#34;methodology:e5c1e941bdd2f8c7b7464f7c70353dd0&#34;&gt;Methodology&lt;/h2&gt;
 
 &lt;p&gt;In future posts I will choose something specific to teach and focus each post on
 that. In that sense it can best be seen as one long post, with this being the
-introduction. After having finished with the xv6, I&amp;rsquo;ll write some sort of
+introduction. After having finished with xv6, I&amp;rsquo;ll write some sort of
 conclusion. In other words, this experiment is a work in progress.&lt;/p&gt;
 
 &lt;p&gt;If you wish to follow along, you can do so on a weekly basis here. You can also
-read my code journal, which is where I write what code I&amp;rsquo;ve written every day,
-at &lt;code&gt;curl plan.oskarth.com/N&lt;/code&gt;, where N is the number visible at &lt;code&gt;curl
-plan.oskarth.com&lt;/code&gt;. All the code is at my
-&lt;a href=&#34;https://github.com/oskarth/xv6&#34;&gt;github&lt;/a&gt;.&lt;/p&gt;
-
-&lt;h2 id=&#34;experiment:6e4e74ce3d77a35b9a9c8e804e0fd799&#34;&gt;Experiment&lt;/h2&gt;
-
-&lt;p&gt;I&amp;rsquo;m going to try to explain the shell and some of its operations today.&lt;/p&gt;
-
-&lt;p&gt;What is the &lt;em&gt;shell&lt;/em&gt;?&lt;/p&gt;
-
-&lt;h2 id=&#34;conclusion:6e4e74ce3d77a35b9a9c8e804e0fd799&#34;&gt;Conclusion&lt;/h2&gt;
+read my daily code journal. The entry number for the latest entry can be found
+by typing &lt;code&gt;curl plan.oskarth.com&lt;/code&gt; into your terminal. Each entry can be accessed
+by &lt;code&gt;curl plan.oskarth.com/N&lt;/code&gt;, where N is the entry number. All the code is
+available on &lt;a href=&#34;https://github.com/oskarth/xv6&#34;&gt;Github&lt;/a&gt;.&lt;/p&gt;
 </description>
     </item>
     

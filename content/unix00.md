@@ -1,7 +1,6 @@
 +++
 date = "2015-06-20T16:00:25+02:00"
-draft = true
-title = "Grokking xv6, Part 1"
+title = "Grokking xv6"
 
 +++
 
@@ -14,10 +13,9 @@ empathetically.
 xv6 is a modern rewrite of Unix V6, the first Unix that was published outside of
 Bell Labs, and John Lion's commentary of its source code. It consist of a text
 and the source code. In total the source is under 10 000 lines of code, and the
-book is under a 100 pages. You can find more out more at the MIT's Operating
-Systems Engineering [class
-website](http://pdos.csail.mit.edu/6.828/2014/xv6.html), which is wherexv6 was
-written.
+book is under 100 pages. You can find more out more at MIT's Operating Systems
+Engineering [class website](http://pdos.csail.mit.edu/6.828/2014/xv6.html),
+which is where xv6 was written.
 
 ## Motivation
 
@@ -26,12 +24,13 @@ respect, what he thought were my biggest weaknesses as a programmer. His answer
 was clear: systems programming and type systems. What is systems programming?
 The short answer is: software that isn't application software.
 
-On the late Richard Feynman's blackboard you can read: *Know how to solve every
-problem that has ever been solved* and *What I cannot create I do not
-understand*.  This is of course just an ambition. And while I don't share his
-ambition for being able to solve every problem that has ever been solved, I
-think he's spot on when it comes to achieving deep understanding. Consider this
-my attempt at grokking systems programming.
+On the late Richard Feynman's
+[blackboard](http://caltech.discoverygarden.ca/islandora/object/ct1%3A483/datastream/JPG/view)
+you can read: *Know how to solve every problem that has ever been solved* and
+*What I cannot create I do not understand*.  This is of course just an ambition.
+And while I don't share his ambition for being able to solve every problem that
+has ever been solved, I think he's spot on when it comes to achieving deep
+understanding. Consider this my attempt at grokking systems programming.
 
 C and UNIX have been around for 30 years and they are likely to be around in
 another 30 years. While I don't have much experience writing C, I have a lot of
@@ -39,22 +38,22 @@ respect for it as an abstraction. Together with Lisp, it strikes me as cleanest
 model of programming that exists (I took that one from [Paul
 Graham](http://www.paulgraham.com/rootsoflisp.html)).
 
-Regardless of what end up doing as a programmer, it's extremely helpful to have
-a grasp of the fundamentals. UNIX and its philsosophy has such a huge influence
-on programming at large, that you can't not do something that it touches. Even
-if you are making a web app, once it reaches a certain size you are bound to run
-into issues that have already been studied at length before in the world of
-operating systems.
+Regardless of what you end up doing as a programmer, it's extremely helpful to
+have a grasp of the fundamentals. UNIX and its philosophy have such a huge
+influence on programming at large, there's nothing you can do that they don't
+touch. Even if you are making a web app, once it reaches a certain size you are
+bound to run into issues that have already been studied at length in the world
+of operating systems.
 
 ## Hypotheses
 
 **1. With dedicated study, I'll be able to grok xv6 in about a month.**
 
-To make the concept of grokkking more concrete:
+To make the concept of grokking more concrete:
 
-- understand every single line in the source code.
-- teach it or parts of it to someone else.
-- rewrite or extend parts of the source code.
+- understand every single line in the source code
+- teach it or parts of it to someone else
+- rewrite or extend parts of the source code
 
 The first will be more of a qualitative test to apply to myself, I aim to do the
 second in these posts, and the third will be done with the help of MIT's 6.828
@@ -64,8 +63,8 @@ second in these posts, and the third will be done with the help of MIT's 6.828
 
 This can be tested by:
 
-- ability to understand modern operating systems.
-- contributing a patch to a modern OS like Linux or FreeBSD.
+- ability to understand modern operating systems
+- contributing a patch to a modern OS like Linux or FreeBSD
 
 See this HN [comment](https://news.ycombinator.com/item?id=4599048) for why the
 second wouldn't be as unreasonable of a goal as it may appear at first.
@@ -73,25 +72,17 @@ second wouldn't be as unreasonable of a goal as it may appear at first.
 **3. After grokking xv6 I'll have developed working knowledge of C.**
 
 This can be tested by understanding and / or contributing to a non-trivial open
-source projects written in C.
+source project written in C.
 
 ## Methodology
 
 In future posts I will choose something specific to teach and focus each post on
 that. In that sense it can best be seen as one long post, with this being the
-introduction. After having finished with the xv6, I'll write some sort of
+introduction. After having finished with xv6, I'll write some sort of
 conclusion. In other words, this experiment is a work in progress.
 
 If you wish to follow along, you can do so on a weekly basis here. You can also
-read my code journal, which is where I write what code I've written every day,
-at `curl plan.oskarth.com/N`, where N is the number visible at `curl
-plan.oskarth.com`. All the code is at my
-[github](https://github.com/oskarth/xv6).
-
-## Experiment
-
-I'm going to try to explain the shell and some of its operations today.
-
-What is the *shell*?
-
-## Conclusion
+read my daily code journal. The entry number for the latest entry can be found
+by typing `curl plan.oskarth.com` into your terminal. Each entry can be accessed
+by `curl plan.oskarth.com/N`, where N is the entry number. All the code is
+available on [Github](https://github.com/oskarth/xv6).
