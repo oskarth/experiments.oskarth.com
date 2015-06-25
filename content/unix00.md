@@ -13,7 +13,7 @@ empathetically.
 xv6 is a modern rewrite of Unix V6, the first Unix that was published outside of
 Bell Labs, and John Lion's commentary of its source code. It consist of a text
 and the source code. In total the source is under 10 000 lines of code, and the
-book is under 100 pages. You can find more out more at MIT's Operating Systems
+book is under 100 pages. You can find out more at MIT's Operating Systems
 Engineering [class website](http://pdos.csail.mit.edu/6.828/2014/xv6.html),
 which is where xv6 was written.
 
@@ -82,7 +82,7 @@ introduction. After having finished with xv6, I'll write some sort of
 conclusion. In other words, this experiment is a work in progress.
 
 If you wish to follow along, you can do so on a weekly basis here. You can also
-read my daily code journal. The entry number for the latest entry can be found
-by typing `curl plan.oskarth.com` into your terminal. Each entry can be accessed
-by `curl plan.oskarth.com/N`, where N is the entry number. All the code is
-available on [Github](https://github.com/oskarth/xv6).
+read my daily code journal. The latest entry can be found by typing `curl -L
+plan.oskarth.com` into your terminal. If you want to see previous entries you
+can find them at `curl plan.oskarth.com/list`. All the code is available on
+[Github](https://github.com/oskarth/xv6).
