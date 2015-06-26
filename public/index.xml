@@ -6,35 +6,264 @@
     <description>Recent content on Experi</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 20 Jun 2015 19:38:21 +0200</lastBuildDate>
+    <lastBuildDate>Fri, 26 Jun 2015 19:00:00 +0200</lastBuildDate>
     <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
-      <title>shell</title>
+      <title>What is a shell and how does it work?</title>
       <link>http://localhost:1313/unix01/</link>
-      <pubDate>Sat, 20 Jun 2015 19:38:21 +0200</pubDate>
+      <pubDate>Fri, 26 Jun 2015 19:00:00 +0200</pubDate>
       
       <guid>http://localhost:1313/unix01/</guid>
       <description>
+
+&lt;p&gt;This post is part of my ongoing experiment in grokking xv6. In it I will teach
+you what a shell is and how it works, using very simple language.&lt;/p&gt;
+
+&lt;p&gt;If you haven&amp;rsquo;t read first part in this series, you can read it
+&lt;a href=&#34;experiments.oskarth.com/unix00/&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;In my experience, most technical explanations are full of jargon and implicit
+knowledge. Throughout the text I&amp;rsquo;ve deliberately italicized the first use of all
+terms that can be seen as domain-specific. In cases where I think an elaboration
+seems necessary or desirable, I&amp;rsquo;ve included either a short in-line explanation
+or a footnote. Does this type of explanation - being explicit about the words
+you use - help with understanding, or is the italicization just getting in the
+way of reading?&lt;/p&gt;
+
+&lt;p&gt;In general, any explanation that is clear and concise is good. This type of
+explanation tries to err more on the side of clarity, rather than conciseness.
+&lt;sup class=&#34;footnote-ref&#34; id=&#34;fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:1&#34;&gt;&lt;a rel=&#34;footnote&#34; href=&#34;#fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:1&#34;&gt;1&lt;/a&gt;&lt;/sup&gt;&lt;/p&gt;
 
 &lt;h2 id=&#34;what-is-a-shell:f09b8128b2cd6dc70217eeb5f2ae4fb1&#34;&gt;What is a shell?&lt;/h2&gt;
 
 &lt;p&gt;A &lt;em&gt;shell&lt;/em&gt; is just another &lt;em&gt;computer program&lt;/em&gt;. It is the main &lt;em&gt;user interface&lt;/em&gt; to
 &lt;em&gt;operating systems&lt;/em&gt; that are similar to &lt;em&gt;Unix&lt;/em&gt;. An operating system is
 responsible for having several programs run on one &lt;em&gt;computer&lt;/em&gt;, and also to tries
-to &lt;em&gt;abstract away&lt;/em&gt; (to draw away attention from) the specific &lt;em&gt;hardware&lt;/em&gt; the
-computer is running on, so the same program can run on many different types of
-computers. Unix is a special type of operating system that was developed at
-&lt;em&gt;Bell Labs&lt;/em&gt; (a special place where a lot of important computer things happened)
-by &lt;em&gt;programmers&lt;/em&gt; (people who make computers do what they want) like &lt;em&gt;Ken
-Thompson&lt;/em&gt;, &lt;em&gt;Dennis Ritchie&lt;/em&gt;, and &lt;em&gt;Brian Kernighan&lt;/em&gt;.&lt;/p&gt;
+to &lt;em&gt;abstract away&lt;/em&gt; &lt;sup class=&#34;footnote-ref&#34; id=&#34;fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:2&#34;&gt;&lt;a rel=&#34;footnote&#34; href=&#34;#fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:2&#34;&gt;2&lt;/a&gt;&lt;/sup&gt; the specific &lt;em&gt;hardware&lt;/em&gt; the computer is running on, so
+the same program can run on many different types of computers. Unix is a special
+type of operating system that was developed at &lt;em&gt;Bell Labs&lt;/em&gt; &lt;sup class=&#34;footnote-ref&#34; id=&#34;fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:3&#34;&gt;&lt;a rel=&#34;footnote&#34; href=&#34;#fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:3&#34;&gt;3&lt;/a&gt;&lt;/sup&gt; by &lt;em&gt;programmers&lt;/em&gt;
+&lt;sup class=&#34;footnote-ref&#34; id=&#34;fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:4&#34;&gt;&lt;a rel=&#34;footnote&#34; href=&#34;#fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:4&#34;&gt;4&lt;/a&gt;&lt;/sup&gt; like &lt;em&gt;Ken Thompson&lt;/em&gt;, &lt;em&gt;Dennis Ritchie&lt;/em&gt;, and &lt;em&gt;Brian Kernighan&lt;/em&gt;. A &lt;em&gt;kernel&lt;/em&gt; is
+the part of the operating system that we will be concerned with. Modern
+operating systems also provide things like &lt;em&gt;graphical interfaces&lt;/em&gt;.&lt;/p&gt;
 
 &lt;p&gt;The shell lives in &lt;em&gt;user space&lt;/em&gt;, along with most other programs, as opposed to
-in &lt;em&gt;kernel space&lt;/em&gt;. The way it talks to the kernel is by &lt;em&gt;system calls&lt;/em&gt; (things
-you can tell the kernel to do).  These system calls allows the user to do things
-like open &lt;em&gt;files&lt;/em&gt; and create &lt;em&gt;processes&lt;/em&gt;.&lt;/p&gt;
+in &lt;em&gt;kernel space&lt;/em&gt;. The way it talks to the kernel is by &lt;em&gt;system calls&lt;/em&gt; &lt;sup class=&#34;footnote-ref&#34; id=&#34;fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:5&#34;&gt;&lt;a rel=&#34;footnote&#34; href=&#34;#fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:5&#34;&gt;5&lt;/a&gt;&lt;/sup&gt;
+These system calls allows the user to do things like open &lt;em&gt;files&lt;/em&gt; and create
+&lt;em&gt;processes&lt;/em&gt;.&lt;/p&gt;
 
-&lt;p&gt;A &lt;em&gt;system call&lt;/em&gt; is something you can tell the kernel to do.&lt;/p&gt;
+&lt;h2 id=&#34;hello-shell:f09b8128b2cd6dc70217eeb5f2ae4fb1&#34;&gt;Hello shell&lt;/h2&gt;
+
+&lt;p&gt;If you want to see a list of what&amp;rsquo;s inside the &lt;em&gt;directory&lt;/em&gt; &lt;sup class=&#34;footnote-ref&#34; id=&#34;fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:6&#34;&gt;&lt;a rel=&#34;footnote&#34; href=&#34;#fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:6&#34;&gt;6&lt;/a&gt;&lt;/sup&gt; in your &lt;em&gt;present
+working directory&lt;/em&gt; &lt;sup class=&#34;footnote-ref&#34; id=&#34;fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:7&#34;&gt;&lt;a rel=&#34;footnote&#34; href=&#34;#fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:7&#34;&gt;7&lt;/a&gt;&lt;/sup&gt; you can use the program &lt;em&gt;ls&lt;/em&gt;. Typing &lt;code&gt;ls&lt;/code&gt; in a shell and
+pressing enter runs it and returns the contents of that folder. How does this
+work? When you press enter the shell &lt;em&gt;parses&lt;/em&gt; &lt;sup class=&#34;footnote-ref&#34; id=&#34;fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:8&#34;&gt;&lt;a rel=&#34;footnote&#34; href=&#34;#fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:8&#34;&gt;8&lt;/a&gt;&lt;/sup&gt; what you wrote and then, for
+most commands anyway, runs that parsed &lt;em&gt;command&lt;/em&gt; in a &lt;em&gt;forked&lt;/em&gt; &lt;em&gt;child process&lt;/em&gt;.&lt;/p&gt;
+
+&lt;p&gt;Let&amp;rsquo;s take a step back. What&amp;rsquo;s a fork? And what exactly is a process? Recall
+that an operating systems allows several programs to run on one computer, and
+processes are a big part of how it does that. A process in Unix-like systems is
+a program that runs and has access to its own piece of &lt;em&gt;memory&lt;/em&gt; which contains
+the program&amp;rsquo;s &lt;em&gt;instructions&lt;/em&gt;, &lt;em&gt;data&lt;/em&gt; and &lt;em&gt;stack&lt;/em&gt;. The operating system then
+makes sure each process gets to do what it wants to do in some reasonable
+manner. Fork is a system call that allows a process to create another process.
+The process &lt;em&gt;calling&lt;/em&gt; fork is called the parent process, and the process it
+creates is called the child process. When a child process starts, its memory is
+initally almost an exact, but separate, copy of its parent process&amp;rsquo;s memory.&lt;/p&gt;
+
+&lt;p&gt;In &lt;em&gt;C&lt;/em&gt; &lt;sup class=&#34;footnote-ref&#34; id=&#34;fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:9&#34;&gt;&lt;a rel=&#34;footnote&#34; href=&#34;#fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:9&#34;&gt;9&lt;/a&gt;&lt;/sup&gt; &lt;em&gt;code&lt;/em&gt; &lt;sup class=&#34;footnote-ref&#34; id=&#34;fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:10&#34;&gt;&lt;a rel=&#34;footnote&#34; href=&#34;#fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:10&#34;&gt;10&lt;/a&gt;&lt;/sup&gt; it would look something like this:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;int pid = fork();
+if(pid == 0)
+  runcmd(parsecmd(buf));
+wait();
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;When we call fork we create a child process, and we get back a &lt;em&gt;pid&lt;/em&gt;, or a
+process id. This process id uniquely identifies that process. We now have two
+different processes running independently, and the pid is different in the two.
+In the parent process, the pid is some number that is used to identify the
+process, whereas in the child process it&amp;rsquo;s simply equal to 0.&lt;/p&gt;
+
+&lt;p&gt;A good way to think about the above piece to code is to see it as being two
+different programs. In the parent process, the &lt;em&gt;if-statement&lt;/em&gt; returns false and
+it gets stuck at &lt;em&gt;wait&lt;/em&gt;, which is another system call that just waits until a
+child process is finished. The kernel makes sure the parent is notified when
+that happens. In the child process, the if-statement returns true and it runs
+the command. This executes &lt;code&gt;ls&lt;/code&gt; and gives over all control to &lt;code&gt;ls&lt;/code&gt; for that
+process.&lt;/p&gt;
+
+&lt;p&gt;Once the child process has finished running - and when that happens is
+completely up to &lt;code&gt;ls&lt;/code&gt; and how it is implemented - the parent process, i.e. the
+shell, will resume running, and we can type another command.&lt;/p&gt;
+
+&lt;h2 id=&#34;redirection:f09b8128b2cd6dc70217eeb5f2ae4fb1&#34;&gt;Redirection&lt;/h2&gt;
+
+&lt;p&gt;Let&amp;rsquo;s say we want to save the &lt;em&gt;output&lt;/em&gt; from running &lt;code&gt;ls&lt;/code&gt; above. We can do so
+using something called &lt;em&gt;input/output&lt;/em&gt; &lt;em&gt;redirection&lt;/em&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;ls &amp;gt; foo
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;There are three parts to this command. When the shell parses the command, it
+figures out that it&amp;rsquo;s a redirection from &lt;code&gt;ls&lt;/code&gt; to &lt;code&gt;foo&lt;/code&gt;. After the shell has
+forked to a child process it runs &lt;code&gt;ls&lt;/code&gt; and saves the output in a &lt;em&gt;file&lt;/em&gt; called
+foo. An ordinary file contains either &lt;em&gt;symbolic&lt;/em&gt; or &lt;em&gt;binary&lt;/em&gt; data, is written in
+some &lt;em&gt;format&lt;/em&gt;, and has some &lt;em&gt;metadata&lt;/em&gt; associated with it (such as who is
+allowed to read and write to it), and we can access it by using its &lt;em&gt;pathname&lt;/em&gt;.
+One of the most common type of file is a &lt;em&gt;text file&lt;/em&gt;, which contains a &lt;em&gt;string&lt;/em&gt;
+of &lt;em&gt;characters&lt;/em&gt;. There are special files too, and in fact even &lt;em&gt;devices&lt;/em&gt; and
+&lt;em&gt;directories&lt;/em&gt; are represented as files.&lt;/p&gt;
+
+&lt;p&gt;How does the output of ls end up in foo? To understand that we have to know a
+bit more about files work in Unix. The system call &lt;em&gt;open&lt;/em&gt; is used to see the
+contents of a file. When we open a file to read or write to it, we get a &lt;em&gt;file
+descriptor&lt;/em&gt; back. This file descriptor is just an &lt;em&gt;integer&lt;/em&gt;. There are three
+special integers, 0, 1, and 2. These are called, in order, &lt;em&gt;STDIN&lt;/em&gt;, &lt;em&gt;STDOUT&lt;/em&gt;,
+and &lt;em&gt;STDERR&lt;/em&gt;. Another word for these is &lt;em&gt;standard streams&lt;/em&gt;. Streams and files
+are closely related - the difference is that a stream doesn&amp;rsquo;t necessarily end,
+since a process can keep writing to it while another process is reading from it.&lt;/p&gt;
+
+&lt;p&gt;When we run &lt;code&gt;ls&lt;/code&gt;, it returns the result by &lt;em&gt;printing&lt;/em&gt; it &lt;sup class=&#34;footnote-ref&#34; id=&#34;fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:11&#34;&gt;&lt;a rel=&#34;footnote&#34; href=&#34;#fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:11&#34;&gt;11&lt;/a&gt;&lt;/sup&gt; to STDOUT, and
+STDOUT is what we see in the shell.  File descriptors are handed out by the
+kernel starting from the lowest available file descriptor, and when we start the
+shell all standard streams are already open.  We can use this fact to get I/O
+redirection with something like this:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;close(fd);
+open(file, mode);
+runcmd(cmd);
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Note that this is a simplified version of actual code and it has no error
+handling. The second &lt;em&gt;argument&lt;/em&gt; to open is mode, which is where we say if we
+want to read or write to the file. Assuming we want to redirect using &lt;code&gt;&amp;gt;&lt;/code&gt; (we
+can also do it the other way using &lt;code&gt;&amp;lt;&lt;/code&gt;), we close STDOUT. When we then open the
+file, foo in this case, to write to it, it will pick the lowest available file
+descriptor, which is 1. When we then run the command &lt;code&gt;ls&lt;/code&gt;, it will print to
+STDOUT - which is &lt;em&gt;bound&lt;/em&gt; to our file foo.&lt;/p&gt;
+
+&lt;h2 id=&#34;pipes:f09b8128b2cd6dc70217eeb5f2ae4fb1&#34;&gt;Pipes&lt;/h2&gt;
+
+&lt;p&gt;Let&amp;rsquo;s look at another example. There&amp;rsquo;s a program called &lt;em&gt;ps&lt;/em&gt; that shows the
+&lt;em&gt;status&lt;/em&gt; of processes. If we want to have a list of all my processes sorted by
+their process id we can &lt;em&gt;pipe&lt;/em&gt; the result of running ps to the program &lt;em&gt;sort&lt;/em&gt;.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;ps | sort
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;When the shell parses this command it sees the symbol &amp;ldquo;|&amp;rdquo; and knows it&amp;rsquo;s a pipe
+command. A pipe command has two sides: a left and a right side. When we write on
+the left side we can read from right side. A pipe is a small &lt;em&gt;buffer&lt;/em&gt; &lt;sup class=&#34;footnote-ref&#34; id=&#34;fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:12&#34;&gt;&lt;a rel=&#34;footnote&#34; href=&#34;#fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:12&#34;&gt;12&lt;/a&gt;&lt;/sup&gt; that
+lives in kernel space and allows processes to talk to each other, which is
+called &lt;em&gt;inter-process communication&lt;/em&gt;. This communication happens continuously as
+new data is written to the pipe. If we write to a temporary file first before
+running the second process the first process would have to finish before we the
+second one starts. It&amp;rsquo;s also a &lt;em&gt;queue&lt;/em&gt;, so even if new data comes in faster than
+you can process it in the right process the data doesn&amp;rsquo;t disappear, and it
+doesn&amp;rsquo;t &lt;em&gt;block&lt;/em&gt; &lt;sup class=&#34;footnote-ref&#34; id=&#34;fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:13&#34;&gt;&lt;a rel=&#34;footnote&#34; href=&#34;#fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:13&#34;&gt;13&lt;/a&gt;&lt;/sup&gt; either.&lt;/p&gt;
+
+&lt;p&gt;How does this work? Let&amp;rsquo;s look at the code.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;int p[2];
+pipe(p);
+
+if(fork() == 0) {
+  close(1);
+  dup(p[1]);
+  close(p[0]);
+  close(p[1]);
+  runcmd(left);
+}
+if(fork() == 0) {
+  close(0);
+  dup(p[0]);
+  close(p[0]);
+  close(p[1]);
+  runcmd(right);
+}
+close(p[0]);
+close(p[1]);
+wait();
+wait();
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;We create an array of two integers, which is where we will track of our file
+descriptors. We then use the system call pipe, which creates a pipe between two
+file descriptors and and puts these in p, where p[0] is for reading and p&lt;a href=&#34;1&#34; title=&#34;But conciseness is still more important than completeness.
+&#34;&gt;1&lt;/a&gt; is
+for writing. After that, we create two child processes - one for the left
+process and one for the right one. These are the two if-blocks that check if
+fork returns 0, which it does in the child processes.&lt;/p&gt;
+
+&lt;p&gt;In the left process we close STDOUT. Then we use another system call &lt;em&gt;dup&lt;/em&gt; that
+duplicates a file descriptor. What this means is that we can refer to the same
+file or stream but using a different file descriptor. Since STDOUT is closed
+and it&amp;rsquo;s the lowest available file descriptor, the write-end of our pipe gets
+connected to STDOUT in this process.&lt;/p&gt;
+
+&lt;p&gt;Recall that a child process has almost exactly the same memory as a parent
+process, and this includes file descriptors, so after we have connected the left
+process to STDOUT we want to close the file descriptors in p. If we don&amp;rsquo;t, we
+might get subtle bugs, such as getting a &lt;em&gt;deadlock&lt;/em&gt; where we don&amp;rsquo;t ever see
+anything printed. Consider it good hygiene to close a file descriptor when you
+are done with it.&lt;/p&gt;
+
+&lt;p&gt;After all that, we run the left process and it prints to STDOUT. Similarly, the
+right process does almost the exact same thing but for STDIN. And finally, the
+parent closes the file descriptors for the pipe and waits for both child
+processes to finish (which, if it&amp;rsquo;s a &lt;em&gt;long-running process&lt;/em&gt;, may never
+happen).&lt;/p&gt;
+
+&lt;h2 id=&#34;conclusion:f09b8128b2cd6dc70217eeb5f2ae4fb1&#34;&gt;Conclusion&lt;/h2&gt;
+
+&lt;p&gt;In this article we have used very simple language &lt;sup class=&#34;footnote-ref&#34; id=&#34;fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:14&#34;&gt;&lt;a rel=&#34;footnote&#34; href=&#34;#fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:14&#34;&gt;14&lt;/a&gt;&lt;/sup&gt; to try to understand
+what a shell is and how it works. We&amp;rsquo;ve looked at how the shell executes a
+simple command, how I/O redirection works, and how pipes allow for inter-process
+comunication. We&amp;rsquo;ve also looked briefly at what files and process are, and how
+to use some basic system calls.&lt;/p&gt;
+
+&lt;p&gt;I hope I have managed to paint a clear picture of the shell. If you wish to
+solidify your understanding of the shell, I recommend you to do what I did and
+go through the xv6 shell in detail, and perhaps do some of the suggested
+homework in MIT&amp;rsquo;s operating systems class. If you have any comments, please
+don&amp;rsquo;t hesitate to &lt;a href=&#34;mailto:me@oskarth.com&#34;&gt;email&lt;/a&gt; or
+&lt;a href=&#34;https://twitter.com/oskarth&#34;&gt;tweet&lt;/a&gt; me.&lt;/p&gt;
+&lt;div class=&#34;footnotes&#34;&gt;
+
+&lt;hr /&gt;
+
+&lt;ol&gt;
+&lt;li id=&#34;fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:1&#34;&gt;But conciseness is still more important than completeness.
+ &lt;a class=&#34;footnote-return&#34; href=&#34;#fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:1&#34;&gt;&lt;sup&gt;[return]&lt;/sup&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;li id=&#34;fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:2&#34;&gt;&lt;em&gt;Abstract away&lt;/em&gt;: To draw away attention from.
+ &lt;a class=&#34;footnote-return&#34; href=&#34;#fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:2&#34;&gt;&lt;sup&gt;[return]&lt;/sup&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;li id=&#34;fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:3&#34;&gt;&lt;em&gt;Bell Labs&lt;/em&gt;: A special place where a lot of important computer things happened.
+ &lt;a class=&#34;footnote-return&#34; href=&#34;#fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:3&#34;&gt;&lt;sup&gt;[return]&lt;/sup&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;li id=&#34;fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:4&#34;&gt;&lt;em&gt;Programmers&lt;/em&gt;: People who make computers do what they want them to do.
+ &lt;a class=&#34;footnote-return&#34; href=&#34;#fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:4&#34;&gt;&lt;sup&gt;[return]&lt;/sup&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;li id=&#34;fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:5&#34;&gt;&lt;em&gt;System calls&lt;/em&gt;: Things you can tell the kernel to do in kernel space.
+ &lt;a class=&#34;footnote-return&#34; href=&#34;#fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:5&#34;&gt;&lt;sup&gt;[return]&lt;/sup&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;li id=&#34;fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:6&#34;&gt;&lt;em&gt;Directory&lt;/em&gt;: Another word for a folder that contains files and other folders.
+ &lt;a class=&#34;footnote-return&#34; href=&#34;#fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:6&#34;&gt;&lt;sup&gt;[return]&lt;/sup&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;li id=&#34;fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:7&#34;&gt;&lt;em&gt;Present working directory&lt;/em&gt;: Where you are in the &lt;em&gt;file hierarchy&lt;/em&gt; at any given time.
+ &lt;a class=&#34;footnote-return&#34; href=&#34;#fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:7&#34;&gt;&lt;sup&gt;[return]&lt;/sup&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;li id=&#34;fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:8&#34;&gt;&lt;em&gt;Parsing&lt;/em&gt;: Figures out the parts of what you told it are.
+ &lt;a class=&#34;footnote-return&#34; href=&#34;#fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:8&#34;&gt;&lt;sup&gt;[return]&lt;/sup&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;li id=&#34;fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:9&#34;&gt;&lt;em&gt;C&lt;/em&gt;: The &lt;em&gt;programming language&lt;/em&gt; most Unix-like systems are written in.
+ &lt;a class=&#34;footnote-return&#34; href=&#34;#fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:9&#34;&gt;&lt;sup&gt;[return]&lt;/sup&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;li id=&#34;fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:10&#34;&gt;&lt;em&gt;Code&lt;/em&gt;: Text that programmers write that tells computers what to do.
+ &lt;a class=&#34;footnote-return&#34; href=&#34;#fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:10&#34;&gt;&lt;sup&gt;[return]&lt;/sup&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;li id=&#34;fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:11&#34;&gt;&lt;em&gt;Printing&lt;/em&gt;: Writing it in a place where you can see it.
+ &lt;a class=&#34;footnote-return&#34; href=&#34;#fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:11&#34;&gt;&lt;sup&gt;[return]&lt;/sup&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;li id=&#34;fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:12&#34;&gt;&lt;em&gt;Buffer&lt;/em&gt;: A place where temporary data is stored.
+ &lt;a class=&#34;footnote-return&#34; href=&#34;#fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:12&#34;&gt;&lt;sup&gt;[return]&lt;/sup&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;li id=&#34;fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:13&#34;&gt;&lt;em&gt;Block&lt;/em&gt;: Get stuck waiting.
+ &lt;a class=&#34;footnote-return&#34; href=&#34;#fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:13&#34;&gt;&lt;sup&gt;[return]&lt;/sup&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;li id=&#34;fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:14&#34;&gt;Undefined technical terms: xv6, computer program, user interface, hardware, graphical interfaces, user space, kernel space, memory, instruction, data, stack, calling, if-statement, output, input/output, symbolic, binary, format, metadata, pathname, string, characters, devices, integer, argument, status, queue, deadlock, long-running process.
+ &lt;a class=&#34;footnote-return&#34; href=&#34;#fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:14&#34;&gt;&lt;sup&gt;[return]&lt;/sup&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/div&gt;
 </description>
     </item>
     
@@ -53,7 +282,7 @@ empathetically.&lt;/p&gt;
 &lt;p&gt;xv6 is a modern rewrite of Unix V6, the first Unix that was published outside of
 Bell Labs, and John Lion&amp;rsquo;s commentary of its source code. It consist of a text
 and the source code. In total the source is under 10 000 lines of code, and the
-book is under 100 pages. You can find more out more at MIT&amp;rsquo;s Operating Systems
+book is under 100 pages. You can find out more at MIT&amp;rsquo;s Operating Systems
 Engineering &lt;a href=&#34;http://pdos.csail.mit.edu/6.828/2014/xv6.html&#34;&gt;class website&lt;/a&gt;,
 which is where xv6 was written.&lt;/p&gt;
 
@@ -126,10 +355,10 @@ introduction. After having finished with xv6, I&amp;rsquo;ll write some sort of
 conclusion. In other words, this experiment is a work in progress.&lt;/p&gt;
 
 &lt;p&gt;If you wish to follow along, you can do so on a weekly basis here. You can also
-read my daily code journal. The entry number for the latest entry can be found
-by typing &lt;code&gt;curl plan.oskarth.com&lt;/code&gt; into your terminal. Each entry can be accessed
-by &lt;code&gt;curl plan.oskarth.com/N&lt;/code&gt;, where N is the entry number. All the code is
-available on &lt;a href=&#34;https://github.com/oskarth/xv6&#34;&gt;Github&lt;/a&gt;.&lt;/p&gt;
+read my daily code journal. The latest entry can be found by typing &lt;code&gt;curl -L
+plan.oskarth.com&lt;/code&gt; into your terminal. If you want to see previous entries you
+can find them at &lt;code&gt;curl plan.oskarth.com/list&lt;/code&gt;. All the code is available on
+&lt;a href=&#34;https://github.com/oskarth/xv6&#34;&gt;Github&lt;/a&gt;.&lt;/p&gt;
 </description>
     </item>
     
