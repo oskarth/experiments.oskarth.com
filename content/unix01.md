@@ -9,7 +9,7 @@ you what a shell is and how it works, using very simple language.
 <!--more-->
 
 If you haven't read first part in this series, you can read it
-[here](experiments.oskarth.com/unix00/).
+[here](http://experiments.oskarth.com/unix00/).
 
 In my experience, most technical explanations are full of jargon and implicit
 knowledge. Throughout the text I've deliberately italicized the first use of all
