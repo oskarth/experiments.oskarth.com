@@ -4,7 +4,8 @@ title = "What is a shell and how does it work?"
 +++
 
 This post is part of my ongoing experiment in grokking xv6. In it I will teach
-you what a shell is and how it works, using very simple language.
+you what a shell is and how it works, taking care to explicitly introduce
+technical terms.
 
 <!--more-->
 
@@ -44,33 +45,34 @@ These system calls allows the user to do things like open *files* and create
 
 If you want to see a list of what's inside the *directory* [^6] in your *present
 working directory* [^7] you can use the program *ls*. Typing `ls` in a shell and
-pressing enter runs it and returns the contents of that folder. How does this
-work? When you press enter the shell *parses* [^8] what you wrote and then, for
-most commands anyway, runs that parsed *command* in a *forked* *child process*.
+pressing enter runs it and returns the contents of that folder. When you press
+enter the shell first *parses* [^8] what you wrote into some internal
+representation. What does it mean to run `ls`? To answer that we must first
+understand what the *fork* system call does and what a *child process* is.
 
-Let's take a step back. What's a fork? And what exactly is a process? Recall
-that an operating systems allows several programs to run on one computer, and
-processes are a big part of how it does that. A process in Unix-like systems is
-a program that runs and has access to its own piece of *memory* which contains
-the program's *instructions*, *data* and *stack*. The operating system then
-makes sure each process gets to do what it wants to do in some reasonable
+Recall that an operating systems allows several programs to run on one computer,
+and processes are a big part of how it does that. A *process* in Unix-like
+systems is a program that runs and has access to its own piece of *memory* which
+contains the program's *instructions*, *data* and *stack*. The operating system
+then makes sure each process gets to do what it wants to do in some reasonable
 manner. Fork is a system call that allows a process to create another process.
 The process *calling* fork is called the parent process, and the process it
 creates is called the child process. When a child process starts, its memory is
 initally almost an exact, but separate, copy of its parent process's memory.
 
-In *C* [^9] *code* [^10] it would look something like this:
+In the case of our `ls` command, the shell runs the parsed command in a forked
+child process. In *C* [^9] *code* [^10] it would look something like this:
 
     int pid = fork();
     if(pid == 0)
       runcmd(parsecmd(buf));
     wait();
 
-When we call fork we create a child process, and we get back a *pid*, or a
-process id. This process id uniquely identifies that process. We now have two
-different processes running independently, and the pid is different in the two.
-In the parent process, the pid is some number that is used to identify the
-process, whereas in the child process it's simply equal to 0.
+When we call fork we create a child process, and we get back an integer that we
+call *pid* for process id. We now have two different processes running
+independently, and the *variable* pid is different in the two. In the parent
+process, the pid is some number that is used to uniquely identify the process,
+whereas in the child process it's simply equal to 0.
 
 A good way to think about the above piece to code is to see it as being two
 different programs. In the parent process, the *if-statement* returns false and
@@ -104,11 +106,12 @@ of *characters*. There are special files too, and in fact even *devices* and
 How does the output of ls end up in foo? To understand that we have to know a
 bit more about files work in Unix. The system call *open* is used to see the
 contents of a file. When we open a file to read or write to it, we get a *file
-descriptor* back. This file descriptor is just an *integer*. There are three
-special integers, 0, 1, and 2. These are called, in order, *STDIN*, *STDOUT*,
-and *STDERR*. Another word for these is *standard streams*. Streams and files
-are closely related - the difference is that a stream doesn't necessarily end,
-since a process can keep writing to it while another process is reading from it.
+descriptor* back. This file descriptor is just an *integer* that represents a
+specific file that a process can read or write to. There are three special
+integers, 0, 1, and 2. These are called, in order, *STDIN*, *STDOUT*, and
+*STDERR*. Another word for these is *standard streams*. Streams and files are
+closely related - the difference is that a stream doesn't necessarily end, since
+a process can keep writing to it while another process is reading from it.
 
 When we run `ls`, it returns the result by *printing* it [^11] to STDOUT, and
 STDOUT is what we see in the shell.  File descriptors are handed out by the
@@ -120,13 +123,12 @@ redirection with something like this:
     open(file, mode);
     runcmd(cmd);
 
-Note that this is a simplified version of actual code and it has no error
+Note that this is a simplified version of the actual code and it has no error
 handling. The second *argument* to open is mode, which is where we say if we
-want to read or write to the file. Assuming we want to redirect using `>` (we
-can also do it the other way using `<`), we close STDOUT. When we then open the
-file, foo in this case, to write to it, it will pick the lowest available file
-descriptor, which is 1. When we then run the command `ls`, it will print to
-STDOUT - which is *bound* to our file foo.
+want to read or write to the file. Assuming we want to redirect using `>`, we
+close STDOUT. When we then open the file, foo in this case, to write to it, it
+will pick the lowest available file descriptor, which is 1. When we then run the
+command `ls`, it will print to STDOUT - which is *bound* to our file foo.
 
 ## Pipes
 
@@ -141,11 +143,9 @@ command. A pipe command has two sides: a left and a right side. When we write on
 the left side we can read from right side. A pipe is a small *buffer* [^12] that
 lives in kernel space and allows processes to talk to each other, which is
 called *inter-process communication*. This communication happens continuously as
-new data is written to the pipe. If we write to a temporary file first before
-running the second process the first process would have to finish before we the
-second one starts. It's also a *queue*, so even if new data comes in faster than
-you can process it in the right process the data doesn't disappear, and it
-doesn't *block* [^13] either.
+new data is written to the pipe. It's also a *queue*, so even if new data comes
+in faster than you can process it in the right process the data doesn't
+disappear, and it doesn't *block* [^13] either.
 
 How does this work? Let's look at the code.
 
@@ -171,12 +171,12 @@ How does this work? Let's look at the code.
     wait();
     wait();
 
-We create an array of two integers, which is where we will track of our file
-descriptors. We then use the system call pipe, which creates a pipe between two
-file descriptors and and puts these in p, where p[0] is for reading and p[1] is
-for writing. After that, we create two child processes - one for the left
-process and one for the right one. These are the two if-blocks that check if
-fork returns 0, which it does in the child processes.
+We create an array of two integers, which is where we will keep track of our
+file descriptors. We then use the system call pipe, which creates a pipe between
+two file descriptors and and puts these in p, where p[0] is for reading and
+p\[1] is for writing. After that, we create two child processes - one for the
+left process and one for the right one. These are the two if-blocks that check
+if fork returns 0, which it does in the child processes.
 
 In the left process we close STDOUT. Then we use another system call *dup* that
 duplicates a file descriptor. What this means is that we can refer to the same
@@ -199,11 +199,11 @@ happen).
 
 ## Conclusion
 
-In this article we have used very simple language [^14] to try to understand
-what a shell is and how it works. We've looked at how the shell executes a
-simple command, how I/O redirection works, and how pipes allow for inter-process
-comunication. We've also looked briefly at what files and process are, and how
-to use some basic system calls.
+In this article we have taken care to explicitly introduce technical terms [^14]
+as we try to understand what a shell is and how it works. We've looked at how
+the shell executes a simple command, how I/O redirection works, and how pipes
+allow for inter-process comunication. We've also looked briefly at what files
+and process are, and how to use some basic system calls.
 
 I hope I have managed to paint a clear picture of the shell. If you wish to
 solidify your understanding of the shell, I recommend you to do what I did and

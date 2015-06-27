@@ -18,7 +18,8 @@
       <description>
 
 &lt;p&gt;This post is part of my ongoing experiment in grokking xv6. In it I will teach
-you what a shell is and how it works, using very simple language.&lt;/p&gt;
+you what a shell is and how it works, taking care to explicitly introduce
+technical terms.&lt;/p&gt;
 
 &lt;p&gt;If you haven&amp;rsquo;t read first part in this series, you can read it
 &lt;a href=&#34;http://experiments.oskarth.com/unix00/&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
@@ -56,22 +57,23 @@ These system calls allows the user to do things like open &lt;em&gt;files&lt;/em
 
 &lt;p&gt;If you want to see a list of what&amp;rsquo;s inside the &lt;em&gt;directory&lt;/em&gt; &lt;sup class=&#34;footnote-ref&#34; id=&#34;fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:6&#34;&gt;&lt;a rel=&#34;footnote&#34; href=&#34;#fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:6&#34;&gt;6&lt;/a&gt;&lt;/sup&gt; in your &lt;em&gt;present
 working directory&lt;/em&gt; &lt;sup class=&#34;footnote-ref&#34; id=&#34;fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:7&#34;&gt;&lt;a rel=&#34;footnote&#34; href=&#34;#fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:7&#34;&gt;7&lt;/a&gt;&lt;/sup&gt; you can use the program &lt;em&gt;ls&lt;/em&gt;. Typing &lt;code&gt;ls&lt;/code&gt; in a shell and
-pressing enter runs it and returns the contents of that folder. How does this
-work? When you press enter the shell &lt;em&gt;parses&lt;/em&gt; &lt;sup class=&#34;footnote-ref&#34; id=&#34;fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:8&#34;&gt;&lt;a rel=&#34;footnote&#34; href=&#34;#fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:8&#34;&gt;8&lt;/a&gt;&lt;/sup&gt; what you wrote and then, for
-most commands anyway, runs that parsed &lt;em&gt;command&lt;/em&gt; in a &lt;em&gt;forked&lt;/em&gt; &lt;em&gt;child process&lt;/em&gt;.&lt;/p&gt;
+pressing enter runs it and returns the contents of that folder. When you press
+enter the shell first &lt;em&gt;parses&lt;/em&gt; &lt;sup class=&#34;footnote-ref&#34; id=&#34;fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:8&#34;&gt;&lt;a rel=&#34;footnote&#34; href=&#34;#fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:8&#34;&gt;8&lt;/a&gt;&lt;/sup&gt; what you wrote into some internal
+representation. What does it mean to run &lt;code&gt;ls&lt;/code&gt;? To answer that we must first
+understand what the &lt;em&gt;fork&lt;/em&gt; system call does and what a &lt;em&gt;child process&lt;/em&gt; is.&lt;/p&gt;
 
-&lt;p&gt;Let&amp;rsquo;s take a step back. What&amp;rsquo;s a fork? And what exactly is a process? Recall
-that an operating systems allows several programs to run on one computer, and
-processes are a big part of how it does that. A process in Unix-like systems is
-a program that runs and has access to its own piece of &lt;em&gt;memory&lt;/em&gt; which contains
-the program&amp;rsquo;s &lt;em&gt;instructions&lt;/em&gt;, &lt;em&gt;data&lt;/em&gt; and &lt;em&gt;stack&lt;/em&gt;. The operating system then
-makes sure each process gets to do what it wants to do in some reasonable
+&lt;p&gt;Recall that an operating systems allows several programs to run on one computer,
+and processes are a big part of how it does that. A &lt;em&gt;process&lt;/em&gt; in Unix-like
+systems is a program that runs and has access to its own piece of &lt;em&gt;memory&lt;/em&gt; which
+contains the program&amp;rsquo;s &lt;em&gt;instructions&lt;/em&gt;, &lt;em&gt;data&lt;/em&gt; and &lt;em&gt;stack&lt;/em&gt;. The operating system
+then makes sure each process gets to do what it wants to do in some reasonable
 manner. Fork is a system call that allows a process to create another process.
 The process &lt;em&gt;calling&lt;/em&gt; fork is called the parent process, and the process it
 creates is called the child process. When a child process starts, its memory is
 initally almost an exact, but separate, copy of its parent process&amp;rsquo;s memory.&lt;/p&gt;
 
-&lt;p&gt;In &lt;em&gt;C&lt;/em&gt; &lt;sup class=&#34;footnote-ref&#34; id=&#34;fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:9&#34;&gt;&lt;a rel=&#34;footnote&#34; href=&#34;#fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:9&#34;&gt;9&lt;/a&gt;&lt;/sup&gt; &lt;em&gt;code&lt;/em&gt; &lt;sup class=&#34;footnote-ref&#34; id=&#34;fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:10&#34;&gt;&lt;a rel=&#34;footnote&#34; href=&#34;#fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:10&#34;&gt;10&lt;/a&gt;&lt;/sup&gt; it would look something like this:&lt;/p&gt;
+&lt;p&gt;In the case of our &lt;code&gt;ls&lt;/code&gt; command, the shell runs the parsed command in a forked
+child process. In &lt;em&gt;C&lt;/em&gt; &lt;sup class=&#34;footnote-ref&#34; id=&#34;fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:9&#34;&gt;&lt;a rel=&#34;footnote&#34; href=&#34;#fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:9&#34;&gt;9&lt;/a&gt;&lt;/sup&gt; &lt;em&gt;code&lt;/em&gt; &lt;sup class=&#34;footnote-ref&#34; id=&#34;fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:10&#34;&gt;&lt;a rel=&#34;footnote&#34; href=&#34;#fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:10&#34;&gt;10&lt;/a&gt;&lt;/sup&gt; it would look something like this:&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;int pid = fork();
 if(pid == 0)
@@ -79,11 +81,11 @@ if(pid == 0)
 wait();
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;When we call fork we create a child process, and we get back a &lt;em&gt;pid&lt;/em&gt;, or a
-process id. This process id uniquely identifies that process. We now have two
-different processes running independently, and the pid is different in the two.
-In the parent process, the pid is some number that is used to identify the
-process, whereas in the child process it&amp;rsquo;s simply equal to 0.&lt;/p&gt;
+&lt;p&gt;When we call fork we create a child process, and we get back an integer that we
+call &lt;em&gt;pid&lt;/em&gt; for process id. We now have two different processes running
+independently, and the &lt;em&gt;variable&lt;/em&gt; pid is different in the two. In the parent
+process, the pid is some number that is used to uniquely identify the process,
+whereas in the child process it&amp;rsquo;s simply equal to 0.&lt;/p&gt;
 
 &lt;p&gt;A good way to think about the above piece to code is to see it as being two
 different programs. In the parent process, the &lt;em&gt;if-statement&lt;/em&gt; returns false and
@@ -118,11 +120,12 @@ of &lt;em&gt;characters&lt;/em&gt;. There are special files too, and in fact eve
 &lt;p&gt;How does the output of ls end up in foo? To understand that we have to know a
 bit more about files work in Unix. The system call &lt;em&gt;open&lt;/em&gt; is used to see the
 contents of a file. When we open a file to read or write to it, we get a &lt;em&gt;file
-descriptor&lt;/em&gt; back. This file descriptor is just an &lt;em&gt;integer&lt;/em&gt;. There are three
-special integers, 0, 1, and 2. These are called, in order, &lt;em&gt;STDIN&lt;/em&gt;, &lt;em&gt;STDOUT&lt;/em&gt;,
-and &lt;em&gt;STDERR&lt;/em&gt;. Another word for these is &lt;em&gt;standard streams&lt;/em&gt;. Streams and files
-are closely related - the difference is that a stream doesn&amp;rsquo;t necessarily end,
-since a process can keep writing to it while another process is reading from it.&lt;/p&gt;
+descriptor&lt;/em&gt; back. This file descriptor is just an &lt;em&gt;integer&lt;/em&gt; that represents a
+specific file that a process can read or write to. There are three special
+integers, 0, 1, and 2. These are called, in order, &lt;em&gt;STDIN&lt;/em&gt;, &lt;em&gt;STDOUT&lt;/em&gt;, and
+&lt;em&gt;STDERR&lt;/em&gt;. Another word for these is &lt;em&gt;standard streams&lt;/em&gt;. Streams and files are
+closely related - the difference is that a stream doesn&amp;rsquo;t necessarily end, since
+a process can keep writing to it while another process is reading from it.&lt;/p&gt;
 
 &lt;p&gt;When we run &lt;code&gt;ls&lt;/code&gt;, it returns the result by &lt;em&gt;printing&lt;/em&gt; it &lt;sup class=&#34;footnote-ref&#34; id=&#34;fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:11&#34;&gt;&lt;a rel=&#34;footnote&#34; href=&#34;#fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:11&#34;&gt;11&lt;/a&gt;&lt;/sup&gt; to STDOUT, and
 STDOUT is what we see in the shell.  File descriptors are handed out by the
@@ -135,13 +138,12 @@ open(file, mode);
 runcmd(cmd);
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;Note that this is a simplified version of actual code and it has no error
+&lt;p&gt;Note that this is a simplified version of the actual code and it has no error
 handling. The second &lt;em&gt;argument&lt;/em&gt; to open is mode, which is where we say if we
-want to read or write to the file. Assuming we want to redirect using &lt;code&gt;&amp;gt;&lt;/code&gt; (we
-can also do it the other way using &lt;code&gt;&amp;lt;&lt;/code&gt;), we close STDOUT. When we then open the
-file, foo in this case, to write to it, it will pick the lowest available file
-descriptor, which is 1. When we then run the command &lt;code&gt;ls&lt;/code&gt;, it will print to
-STDOUT - which is &lt;em&gt;bound&lt;/em&gt; to our file foo.&lt;/p&gt;
+want to read or write to the file. Assuming we want to redirect using &lt;code&gt;&amp;gt;&lt;/code&gt;, we
+close STDOUT. When we then open the file, foo in this case, to write to it, it
+will pick the lowest available file descriptor, which is 1. When we then run the
+command &lt;code&gt;ls&lt;/code&gt;, it will print to STDOUT - which is &lt;em&gt;bound&lt;/em&gt; to our file foo.&lt;/p&gt;
 
 &lt;h2 id=&#34;pipes:f09b8128b2cd6dc70217eeb5f2ae4fb1&#34;&gt;Pipes&lt;/h2&gt;
 
@@ -157,11 +159,9 @@ command. A pipe command has two sides: a left and a right side. When we write on
 the left side we can read from right side. A pipe is a small &lt;em&gt;buffer&lt;/em&gt; &lt;sup class=&#34;footnote-ref&#34; id=&#34;fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:12&#34;&gt;&lt;a rel=&#34;footnote&#34; href=&#34;#fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:12&#34;&gt;12&lt;/a&gt;&lt;/sup&gt; that
 lives in kernel space and allows processes to talk to each other, which is
 called &lt;em&gt;inter-process communication&lt;/em&gt;. This communication happens continuously as
-new data is written to the pipe. If we write to a temporary file first before
-running the second process the first process would have to finish before we the
-second one starts. It&amp;rsquo;s also a &lt;em&gt;queue&lt;/em&gt;, so even if new data comes in faster than
-you can process it in the right process the data doesn&amp;rsquo;t disappear, and it
-doesn&amp;rsquo;t &lt;em&gt;block&lt;/em&gt; &lt;sup class=&#34;footnote-ref&#34; id=&#34;fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:13&#34;&gt;&lt;a rel=&#34;footnote&#34; href=&#34;#fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:13&#34;&gt;13&lt;/a&gt;&lt;/sup&gt; either.&lt;/p&gt;
+new data is written to the pipe. It&amp;rsquo;s also a &lt;em&gt;queue&lt;/em&gt;, so even if new data comes
+in faster than you can process it in the right process the data doesn&amp;rsquo;t
+disappear, and it doesn&amp;rsquo;t &lt;em&gt;block&lt;/em&gt; &lt;sup class=&#34;footnote-ref&#34; id=&#34;fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:13&#34;&gt;&lt;a rel=&#34;footnote&#34; href=&#34;#fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:13&#34;&gt;13&lt;/a&gt;&lt;/sup&gt; either.&lt;/p&gt;
 
 &lt;p&gt;How does this work? Let&amp;rsquo;s look at the code.&lt;/p&gt;
 
@@ -188,13 +188,12 @@ wait();
 wait();
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;We create an array of two integers, which is where we will track of our file
-descriptors. We then use the system call pipe, which creates a pipe between two
-file descriptors and and puts these in p, where p[0] is for reading and p&lt;a href=&#34;1&#34; title=&#34;But conciseness is still more important than completeness.
-&#34;&gt;1&lt;/a&gt; is
-for writing. After that, we create two child processes - one for the left
-process and one for the right one. These are the two if-blocks that check if
-fork returns 0, which it does in the child processes.&lt;/p&gt;
+&lt;p&gt;We create an array of two integers, which is where we will keep track of our
+file descriptors. We then use the system call pipe, which creates a pipe between
+two file descriptors and and puts these in p, where p[0] is for reading and
+p[1] is for writing. After that, we create two child processes - one for the
+left process and one for the right one. These are the two if-blocks that check
+if fork returns 0, which it does in the child processes.&lt;/p&gt;
 
 &lt;p&gt;In the left process we close STDOUT. Then we use another system call &lt;em&gt;dup&lt;/em&gt; that
 duplicates a file descriptor. What this means is that we can refer to the same
@@ -217,11 +216,11 @@ happen).&lt;/p&gt;
 
 &lt;h2 id=&#34;conclusion:f09b8128b2cd6dc70217eeb5f2ae4fb1&#34;&gt;Conclusion&lt;/h2&gt;
 
-&lt;p&gt;In this article we have used very simple language &lt;sup class=&#34;footnote-ref&#34; id=&#34;fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:14&#34;&gt;&lt;a rel=&#34;footnote&#34; href=&#34;#fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:14&#34;&gt;14&lt;/a&gt;&lt;/sup&gt; to try to understand
-what a shell is and how it works. We&amp;rsquo;ve looked at how the shell executes a
-simple command, how I/O redirection works, and how pipes allow for inter-process
-comunication. We&amp;rsquo;ve also looked briefly at what files and process are, and how
-to use some basic system calls.&lt;/p&gt;
+&lt;p&gt;In this article we have taken care to explicitly introduce technical terms &lt;sup class=&#34;footnote-ref&#34; id=&#34;fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:14&#34;&gt;&lt;a rel=&#34;footnote&#34; href=&#34;#fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:14&#34;&gt;14&lt;/a&gt;&lt;/sup&gt;
+as we try to understand what a shell is and how it works. We&amp;rsquo;ve looked at how
+the shell executes a simple command, how I/O redirection works, and how pipes
+allow for inter-process comunication. We&amp;rsquo;ve also looked briefly at what files
+and process are, and how to use some basic system calls.&lt;/p&gt;
 
 &lt;p&gt;I hope I have managed to paint a clear picture of the shell. If you wish to
 solidify your understanding of the shell, I recommend you to do what I did and
