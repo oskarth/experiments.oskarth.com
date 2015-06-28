@@ -35,11 +35,15 @@ also provide things like *graphical interfaces*.
 
 The shell lives in *user space*, along with most other programs, as opposed to
 in *kernel space* which is where the kernel lives. *Software* living in kernel
-space can execute *privileged instructions*, such as *reading* and *writing* to
-a hardware *disk*. We don't want any software to be able to do this, as it could
+space can execute *privileged instructions*, such as dealing directly with
+hardware. We don’t want any software to be able to do this, as it could
 *overwrite* the operating system itself. The way the shell talks to the kernel
-is by *system calls* [^2] These system calls allows the user to do things like
-open *files* and create *processes*.
+is by system calls [^2]. These system calls allows the user to do things like
+*open files* and *create processes*. Since software in user space always have to
+go through the kernel to perform such operations, the kernel can make sure the
+shell doesn't do anything it doesn't want to allow. Note that this is different
+from a *super-user* or *running as root*, which is about *user privilege* that
+software in user space have.
 
 ## Hello shell
 

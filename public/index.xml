@@ -47,11 +47,15 @@ also provide things like &lt;em&gt;graphical interfaces&lt;/em&gt;.&lt;/p&gt;
 
 &lt;p&gt;The shell lives in &lt;em&gt;user space&lt;/em&gt;, along with most other programs, as opposed to
 in &lt;em&gt;kernel space&lt;/em&gt; which is where the kernel lives. &lt;em&gt;Software&lt;/em&gt; living in kernel
-space can execute &lt;em&gt;privileged instructions&lt;/em&gt;, such as &lt;em&gt;reading&lt;/em&gt; and &lt;em&gt;writing&lt;/em&gt; to
-a hardware &lt;em&gt;disk&lt;/em&gt;. We don&amp;rsquo;t want any software to be able to do this, as it could
+space can execute &lt;em&gt;privileged instructions&lt;/em&gt;, such as dealing directly with
+hardware. We don’t want any software to be able to do this, as it could
 &lt;em&gt;overwrite&lt;/em&gt; the operating system itself. The way the shell talks to the kernel
-is by &lt;em&gt;system calls&lt;/em&gt; &lt;sup class=&#34;footnote-ref&#34; id=&#34;fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:2&#34;&gt;&lt;a rel=&#34;footnote&#34; href=&#34;#fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:2&#34;&gt;2&lt;/a&gt;&lt;/sup&gt; These system calls allows the user to do things like
-open &lt;em&gt;files&lt;/em&gt; and create &lt;em&gt;processes&lt;/em&gt;.&lt;/p&gt;
+is by system calls &lt;sup class=&#34;footnote-ref&#34; id=&#34;fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:2&#34;&gt;&lt;a rel=&#34;footnote&#34; href=&#34;#fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:2&#34;&gt;2&lt;/a&gt;&lt;/sup&gt;. These system calls allows the user to do things like
+&lt;em&gt;open files&lt;/em&gt; and &lt;em&gt;create processes&lt;/em&gt;. Since software in user space always have to
+go through the kernel to perform such operations, the kernel can make sure the
+shell doesn&amp;rsquo;t do anything it doesn&amp;rsquo;t want to allow. Note that this is different
+from a &lt;em&gt;super-user&lt;/em&gt; or &lt;em&gt;running as root&lt;/em&gt;, which is about &lt;em&gt;user privilege&lt;/em&gt; that
+software in user space have.&lt;/p&gt;
 
 &lt;h2 id=&#34;hello-shell:f09b8128b2cd6dc70217eeb5f2ae4fb1&#34;&gt;Hello shell&lt;/h2&gt;
 
