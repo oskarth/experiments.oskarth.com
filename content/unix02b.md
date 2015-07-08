@@ -92,7 +92,9 @@ it. Here's how to read it. In the first line, `=>` means that this is
 the instruction we are about to execute, but haven't yet. `0x00000304`
 is the address of the instruction written in *base 16* or
 *hexadecimal* or *hex* - this is where instruction lives in
-memory. `<+0>` is an offset that we are going to ignore. `push` is a
+memory. Another way of writing the above address is to omit the
+leading zeros, so simply `0x304` (0x means it's a hexadecimal
+number). `<+0>` is an offset that we are going to ignore. `push` is a
 *mnemonic* or an *instruction*, and its argument in this case is
 `%ebp`.
 
@@ -367,6 +369,89 @@ call to ls (see the code section above).
    0x32e <main+42>:     mov    0x1c(%esp),%eax
 ```
 
-This is how the computers keeps track of where to go next. Cool huh?
+Let's step two more instructions, pushing the base pointer onto the
+stack and moving (or "saving") the stack pointer to the base pointer.
 
+```
+(gdb) x /4x $esp
+0x2fb8: 0x00002fe4      0x0000031f      0x00000b5f      0x00000000
+```
 
+We got a new address on the stack, which was our old base pointer from
+main. We've seen this before, but let's take a look again.
+
+TODO: this part is confusing, see if it clears up after skipping in ls
+
+```
+(gdb) x /4x 0x00002fe4
+0x2fe4: 0x00003fb8      0xffffffff      0x00000001      0x00002ff4
+```
+
+This is our stack at the beginning of main.
+
+## Skipping until the end of ls
+
+There's a lot that happens in `ls` and the functions it calls. We are
+going to skip all that by going to the very last line of the C code in
+the ls function, line 71. We do this with `until 71`. What's about to
+happen now and what does the stack look like?
+
+```
+(gdb) x /6i $eip
+=> 0x2f9 <ls+585>:      add    $0x25c,%esp
+   0x2ff <ls+591>:      pop    %ebx
+   0x300 <ls+592>:      pop    %esi
+   0x301 <ls+593>:      pop    %edi
+   0x302 <ls+594>:      pop    %ebp
+   0x303 <ls+595>:      ret
+(gdb) x /4x $esp
+0x2d50: 0x00000003      0x00002d88      0x00000010      0x00000001
+```
+
+I don't know what those things on the stack are, but presumably they
+come from something ls did - in fact, we would have to run `x /170x
+$esp` to begin to see addresses that we recognize on our stack. That's
+okay though, we are about the clean that stack up with the function
+epilogue. Essentially the five first instructions are the opposite of
+subtracting and pushing things onto the stack. If we step through them
+with `stepi 5` we get:
+
+```
+(gdb) x /4x $esp
+0x2fbc: 0x0000031f      0x00000b5f      0x00000000      0x00000000
+```
+
+Before we did that our stack pointer was set to `0x2d50`, and now it's
+back to `0x2fbc`. As a sanity check on what's going on, we can see
+that everything seems OK: we just cleaned up 620 bytes, of which the
+first `add $0x25c, %esp` took care of 604. `pop` was called four
+times, and 4 times 4 bytes (the size of each register that we popped)
+is 16, which takes care of the rest.
+
+```
+print  0x2fbc - 0x2d50
+$3 = 620
+print 0x25c
+$4 = 604
+```
+
+Our stack pointer is now back at `02fbc`, and the next instruction is
+a simple `ret`. What does `ret` do? It's the opposite of `call`: it
+pops off an address, and jumps to it. So without single stepping, we
+should expect it to jump to `0x0000031f` and set the stack pointer to
+`0x2fbc - 4` = `0x2fb8`. What is `0x31f` again? It's the next line in
+`main` after calling `ls`. Let's single step it:
+
+```
+x /4x $esp
+0x2fc0: 0x00000b5f      0x00000000      0x00000000      0x00000000
+x /4i $eip
+=> 0x31f <main+27>:     call   0x5cb <exit>
+   0x324 <main+32>:     movl   $0x1,0x1c(%esp)
+   0x32c <main+40>:     jmp    0x34d <main+73>
+   0x32e <main+42>:     mov    0x1c(%esp),%eax
+```
+
+Indeed, we are now back in `main` and are about to call `exit`, and
+our stack is back to the same state it was just before it was about to
+call `ls`.
