@@ -168,7 +168,7 @@ To understand that we have to talk about *calling
 conventions*. Different programming languages have different calling
 convention, and sometimes it can even differ on different computer
 architecture. If you use C, most of them are quite similar though,
-with minor differences (for example, if use certain compiler
+with minor differences (for example, if we use certain compiler
 optimizations). First we push the arguments of the function, in
 reverse order, and then we push the return address, or the return PC
 (program counter). Calling conventions cover a lot more than this, and
@@ -261,19 +261,21 @@ This subtracts 4 from the stack pointer and puts $ebp in whatever the
 stack pointer is pointing to. $esp is the address of the stack
 pointer, and ($esp) is what the stack pointer points to.
 
-After `mov %esp, %ebp` nothing changes. This moves our stack pointer
-into the *base pointer* address.
+After `mov %esp, %ebp` nothing changes on the stack. This moves our
+stack pointer into the *base pointer* address.
 
 What is $ebp? It stands for *(extended) base pointer* (or sometimes
 it's called a frame pointer, depending on the architecture). The idea
 is that the stack pointer changes throughout the function as variables
-and registers are pushed and popped, but when the function returns we
-can trust that the base pointer stays the same. This means that we
-can, when the function is about to return, restore our stack pointer
-to the base pointer, and thus we have easy access to the return
-address, which is right below us! Note that the base pointer isn't
-strictly necessary, since we (or rather, our compiler) can do this
-arithmetic itself, but it can be convenient.
+and registers are pushed and popped, but the base pointer stays the
+same throughout. That means that we can use the base pointer as an
+anchor to find parameters and local variables. For example, if you
+look at the first assembly code listing, you can see that there are
+things like `0x8(%ebp)`. This takes the content of %ebp but offset by
+8, which is two words, and in this case that's where argc is
+located. Note that the base pointer isn't strictly necessary, since we
+(or rather, our compiler) can do this arithmetic itself, but it can be
+convenient.
 
 Let's move on. The next instruction is `and $0xfffffff0,%esp`, and
 it's a so called stack alignment (`0xfffffff0` is -16 in hex, using
@@ -282,10 +284,10 @@ current position in memory, or at a lower one, but more importantly
 that it will be at a 16-byte boundary. Why this is done is outside of
 the scope of this article, but it has to do with performance and being
 able to do several instructions in parallel on certain architectures
-like *SIMD*. We can see that the stack pointer is evenly divided by 16
-with `print 0x2fe0 % 16` (or just by looking at the last position in
-the hex number, since that's the "16"-th position). This is what the
-stack looks like now:
+with something called *SIMD*. We can see that the stack pointer is
+evenly divided by 16 with `print 0x2fe0 % 16` (or just by looking at
+the last position in the hex number, since that's the "16"-th
+position). This is what the stack looks like now:
 
 ```
 0x2fe0: 0x00000000  <--- ESP
@@ -324,8 +326,9 @@ which puts 0xb5f on the stack without changing the stack pointer (good
 thing we made room for local variables before so we didn't overwrite
 our stack!) What is that? Just like was done to `main` in the very
 beginning, before we call the `ls` (the function, not the program) we
-push the argument on the stack. We know it should be a string, and we
-can see the true nature of it by casting it to a char*:
+push the argument on the stack. We know there's only one argument and
+that it should be a string, and we can see the true nature of it by
+casting it to a char*:
 
 ```
 print (char*)0xb5f
@@ -335,11 +338,11 @@ $2 = 0xb5f "."
 ```
 
 The next instruction is `call 0xb0 <ls>`. `call` does two things, it
-pushes the address of the next instruction onto the stack, and then it
-jumps to a subprogram (which is just another address in memory, but
-since our program was compiled with debug information on we can see
-that it says <ls>). After executing that instruction our stack and our
-upcoming four instructions to execute looks like this:
+pushes the address of the next instruction in `main` onto the stack,
+and then it jumps to a subprogram (which is just another address in
+memory, but since our program was compiled with debug information on
+we can see that it says `<ls>`). After executing that instruction our
+stack and our upcoming four instructions to execute looks like this:
 
 ```
 (gdb) x /4x $esp
@@ -356,7 +359,7 @@ call, is what our instruction pointer is set to. You might recognize
 the two first lines from the prologue in our main function.
 
 What about `0x0000031f` that's now on top of our stack? It's the
-address where the program should keep executing oncs the ls function
+address where the program should keep executing once the ls function
 returns. We can confirm this by looking at it's memory location as
 instructions. These are exactly the instructions that come after the
 call to ls (see the code section above).
@@ -369,32 +372,33 @@ call to ls (see the code section above).
    0x32e <main+42>:     mov    0x1c(%esp),%eax
 ```
 
-Let's step two more instructions, pushing the base pointer onto the
-stack and moving (or "saving") the stack pointer to the base pointer.
+We are still in ls though. Let's step two more instructions, pushing
+the base pointer onto the stack and moving (or "saving") the stack
+pointer to the base pointer.
 
 ```
 (gdb) x /4x $esp
 0x2fb8: 0x00002fe4      0x0000031f      0x00000b5f      0x00000000
 ```
 
-We got a new address on the stack, which was our old base pointer from
+Note that the new address on the stack is our old base pointer from
 main. We've seen this before, but let's take a look again.
-
-TODO: this part is confusing, see if it clears up after skipping in ls
 
 ```
 (gdb) x /4x 0x00002fe4
 0x2fe4: 0x00003fb8      0xffffffff      0x00000001      0x00002ff4
 ```
 
-This is our stack at the beginning of main.
+This is exactly our stack at the beginning of main, so we now have
+easy access to that state for when we want to go back to it.
 
 ## Skipping until the end of ls
 
 There's a lot that happens in `ls` and the functions it calls. We are
 going to skip all that by going to the very last line of the C code in
-the ls function, line 71. We do this with `until 71`. What's about to
-happen now and what does the stack look like?
+the ls function, line 71. We do this with `until 71`. When we are at
+the end of `ls`, what's about to happen now and what does the stack
+look like?
 
 ```
 (gdb) x /6i $eip
@@ -408,7 +412,7 @@ happen now and what does the stack look like?
 0x2d50: 0x00000003      0x00002d88      0x00000010      0x00000001
 ```
 
-I don't know what those things on the stack are, but presumably they
+We don't know what those things on the stack are, but presumably they
 come from something ls did - in fact, we would have to run `x /170x
 $esp` to begin to see addresses that we recognize on our stack. That's
 okay though, we are about the clean that stack up with the function
@@ -435,12 +439,13 @@ print 0x25c
 $4 = 604
 ```
 
-Our stack pointer is now back at `02fbc`, and the next instruction is
-a simple `ret`. What does `ret` do? It's the opposite of `call`: it
-pops off an address, and jumps to it. So without single stepping, we
-should expect it to jump to `0x0000031f` and set the stack pointer to
-`0x2fbc - 4` = `0x2fb8`. What is `0x31f` again? It's the next line in
-`main` after calling `ls`. Let's single step it:
+Our stack pointer is now back at `02fbc`, which was what our stack
+looked like at the very beginning of the `ls` function, and the next
+instruction is a simple `ret`. What does `ret` do? It's the opposite
+of `call`: it pops off an address, and jumps to it. So without single
+stepping, we should expect it to jump to `0x0000031f` and set the
+stack pointer to `0x2fbc - 4` = `0x2fb8`. What is `0x31f` again? It's
+the next line in `main` after calling `ls`. Let's single step it:
 
 ```
 x /4x $esp
@@ -455,3 +460,8 @@ x /4i $eip
 Indeed, we are now back in `main` and are about to call `exit`, and
 our stack is back to the same state it was just before it was about to
 call `ls`.
+
+TODO: make small exercise?
+To check your understanding, write down what each thing on the stack is.
+
+TODO: make video of tracing
