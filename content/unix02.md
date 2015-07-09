@@ -22,14 +22,16 @@ fluffy view of reality, but I want to stay as faithful as possible to
 what you would actually see using GDB and a real code base.
 
 One of the hardest parts so far going through xv6 was not having a
-good mental model of the *stack* and how it operates, will attempt to
-comumnicate at least a part of this to you.
+good mental model of the *stack* and how it operates, I will attempt to
+communicate at least a part of this to you.
 
 ## Code
 
 We are going to look at some *assembly code*. I do not expect you to
-understand everything, instead we will look at a few things and see
+understand everything. Instead we will look at a few things and see
 what they can teach us about the stack.
+
+TODO: When we type ls in the terminal, here's that C fn
 
 Here's the C code for the *main function* in `ls.c`:
 
@@ -50,13 +52,16 @@ main(int argc, char *argv[])
 ```
 
 This is the main entry point of `ls`. `argc` stands for *argument
-count*, and if main doesn't get more than two arguments (say, if you
-write `ls foo/bar`) it will call the function `ls` with the argument
-`"."`, and after that it will call the `exit` function.
+count*, and if main doesn't get a second argument (`ls` counts as the
+first argument to main) it will call the function `ls` with the
+argument `.`. After that it will call the `exit` function.
 
 We can get the assembly code for our main function with the
 `disassemble` command in *GDB*. GDB is a debugger that allows us to
-see what is going on inside a program when it executes.
+see what is going on inside a program when it executes. We will see a
+lot of "code boxes" as we move on. Lines starting with `(gdb)` are
+lines that we write as input, and the other lines are things GDB shows
+us.
 
 ```
 (gdb) disassemble main
@@ -86,20 +91,25 @@ Dump of assembler code for function main:
 0x00000356 <+82>:    call   0x5cb <exit>
 ```
 
-This is a lot of code, and we are not going to understand all of
-it. Here's how to read it. In the first line, `=>` means that this is
-the instruction we are about to execute, but haven't yet. `0x00000304`
-is the *address* of the *instruction* written in *base 16* or
-*hexadecimal* or *hex* - this is where instruction lives in
-memory. `<+0>` is an offset that we are going to ignore. `push` is a
-*mnemonic* or an *instruction*, and its argument in this case is
-`%ebp`. We will talk more about instructions and what their arguments
-mean in later sections.
+This is a lot of code, and we are not going to understand all of it in
+this post. Here's how to read it. The first line is the following:
+
+```
+=> 0x00000304 <+0>:     push   %ebp
+```
+
+`=>` means that this is the instruction we are about to execute, but
+haven't yet. `0x00000304` is the *address* of the *instruction*
+written in *base 16* or *hexadecimal* or *hex* - this is where the
+instruction lives in memory. `<+0>` is an offset that we are going to
+ignore. `push` is a *mnemonic* or an *instruction*, and its argument
+in this case is `%ebp`. We will talk more about instructions and what
+their arguments mean in later sections.
 
 How does hexadecimal work? The *decimal* alphabet consists of the
 numbers 0 through 9, and the *binary* alphabet consists of 0
 and 1. Similarly, the hexadecimal alphabet has 16 "numbers" - 0
-through 9 and then A through F. For example, 15 would be written
+through 9 and then A through F. For example, 14 would be written
 simply as "E", and 17 as "11". To differentiate between hexadecimal
 numbers and decimal we use the *prefix* "0x", so 11 is 11 but "0x11"
 is 17. *Addresses* in the computer's memory can be very long, so
@@ -107,50 +117,45 @@ instead of writing `0x00000304` we can omit the leading zeroes and
 write `0x304` instead.
 
 Without knowing anything about assembly, you might notice that the
-`call` instruction occurs several times, and that one of its arguments
-is `<ls>` and `<exit>`. This corresponds to the four function calls we
-see in our main function.
+`call` instruction occurs several times, and that its arguments is
+either `<ls>` or `<exit>`. These `call` instructions correspond to the
+four function calls we see in our main function.
 
 ## The Stack
 
-When we write programs, we don't usually write a series of
-instructions for the computer to execute. Instead, we use *structured
-programming* and *subroutines* that call each other and can be used
-multiple times. If we follow the execution of a program by pointing at
-the screen we might say "this calls this, which calls this, then it
-returns here". The stack is how the computer keeps track of things
-like this, where it came from, what the argument of a function are,
-etc.
+If we follow the execution of a program by pointing at the screen we
+might say "this calls this, which calls this, then it returns
+here". The stack is how the computer keeps track of things like this -
+where it came from, what the arguments of a function are, etc.
 
 Let's have a look at what's on the stack before we have executed a
 single instruction. We can do this using GDB's `x` command, which
 allows us to inspect memory at a given address. It takes two
 arguments: a format and an address.
 
-We will see a lot of "code boxes" as we move on. Lines starting with
-`(gdb)` are lines that we write as input, and the other lines are
-things GDB shows us.
-
 ```
 (gdb) x /x $esp
 0x2fe8: 0xffffffff
 ```
 
-This means that $esp is set to `0x2fe8` and the content of it is
-`0xffffffff`. This is what's on top of the stack. We can see a bit
-more of what's on the stack with the following.
+In this case `/x` is the format and `$esp` is the address. We see that
+$esp is set to `0x2fe8` and the content of it is `0xffffffff`. This is
+what's on top of the stack. We can see a bit more of what's on the
+stack with the following.
 
 ```
 (gdb) x /4x $esp
 0x2fe8: 0xffffffff      0x00000001      0x00002ff4      0x00002ffc
 ```
 
-In this case, the format `4x` means "show me 4 words in hex". A word
-is 4 bytes long. A byte is 8 bits long and 8 times 4 is 32, which is
-how big are our addresses and registers are. This makes sense, since
-we are running on a 32-bit architecture. `$esp` is a special
-*register* called *(extended) stack pointer*. Registers store data for
-the processor for easy access.
+Here the format `/4x` means "show me 4 *words* in hex". In GDB, a word
+is 4 *bytes* (and a byte is always 8 bits). Addresses are one word, or
+32 bits, which is why it's called a *32-bit architecture*. *Registers*
+are also 32 bits. Registers store data for the *CPU* for easy
+access. `esp` is a special *register* called *(extended) stack
+pointer*, and `$esp` is the way you reference it.
+
+TODO: Above confusing address/register etc.
 
 At any given time, the stack pointer points to the top of the
 *stack*. In the above output, `0x2fe8` is the value of $esp, and it
@@ -512,4 +517,6 @@ I hope this was useful and that you learned something. Here's the
 video that was promised. In it we trace a system call from user space
 to kernel space and back.
 
-<VIDEO-LINK>
+TODO: Add video link with audio
+
+Here's the non-audio version: www.twitch.tv/oskarth/v/7084739
