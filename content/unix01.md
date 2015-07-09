@@ -16,7 +16,7 @@ knowledge. Throughout the text I've deliberately italicized the first use of all
 terms that can be seen as domain-specific. In cases where I think an elaboration
 seems necessary, I've included either a short in-line explanation or a footnote.
 Does this type of explanation - being explicit about the words you use - help
-with understanding, or is the italicization just getting in the way of reading.
+with understanding, or is the italicization just getting in the way of reading?
 
 In general, any explanation that is clear and concise is good. This type of
 explanation tries to err more on the side of clarity, rather than conciseness. [^1]
