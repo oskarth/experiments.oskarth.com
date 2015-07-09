@@ -1,5 +1,5 @@
 +++
-date = "2015-07-04T13:42:52+02:00"
+date = "2015-07-07T19:52:26+02:00"
 draft = true
 title = "What's on the stack?"
 
@@ -12,31 +12,28 @@ calls and how they work under the hood.
 
 ## Introduction
 
-TODO: Primer on reading hexadecimal
-
-A word of warning: in this article there'll be a lot of things that
-you'll see that we won't explain. Instead, we are going to learn how
-to squint at the code, suppress detail and focus on what we want to do.
+Let's begin with a word of warning: in this article there'll be a lot
+of things that you'll see that we won't explain. Instead, we are going
+to learn how to squint at the code, suppress detail and focus on what
+we want to do.
 
 Hardest part for me was not having a good mental model of the stack
-and how it operates, attempt to give this to you.
+and how it operates, will attempt to give this to you.
+
+TODO: Obsolete? More like one now
 
 Three purposes:
-
 1. See how a system call flows through the system.
 2. Learn how to use GDB to figure such things out.
 3. Learn about the stack.
 
-A computer executes instructions, one after another.
+## Code
 
+We are going to look at some assembly. I do not expect you to
+understand everything, instead we will look at a few things and see
+what they can teach us about the stack.
 
-## Running ls
-
-Even if you don't understand all you can understand the gist of
-it. Let's see what we might recognize.
-
-
-This is the main function of ls, in ls.c:
+Here's the C code for the main function in `ls.c`:
 
 ```
 int
@@ -54,84 +51,169 @@ main(int argc, char *argv[])
 }
 ```
 
-Here's the equivalent asssembly for that main file.
+This is the main entry point of `ls`. `argc` stands for *argument
+count*, and if main doesn't get more than two arguments (say, if you
+write `ls foo/bar`) it will call the function `ls` with the argument
+".", and after that it will call the `exit` function.
 
-(Using ATT syntax, not Intel, see Brennan).
-
-General format: mnemonic source, destination. This is (usually)
-straight to binary.
-
-Assembly language is very simple; every single instruction is easily
-understandable. The problem is understanding the context and the
-vastness of it. If you just go line by line and take your time to look
-up in Carter and Brennan, you will know exactly what is going on.
+We can get the assembly for our main function with the `disassemble`
+command in GDB:
 
 ```
 (gdb) disassemble main
 Dump of assembler code for function main:
 => 0x00000304 <+0>:     push   %ebp
-   0x00000305 <+1>:     mov    %esp,%ebp
-   0x00000307 <+3>:     and    $0xfffffff0,%esp
-   0x0000030a <+6>:     sub    $0x20,%esp
-   0x0000030d <+9>:     cmpl   $0x1,0x8(%ebp)
-   0x00000311 <+13>:    jg     0x324 <main+32>
-   0x00000313 <+15>:    movl   $0xb5f,(%esp)
-   0x0000031a <+22>:    call   0xb0 <ls>
-   0x0000031f <+27>:    call   0x5cb <exit>
-   0x00000324 <+32>:    movl   $0x1,0x1c(%esp)
-   0x0000032c <+40>:    jmp    0x34d <main+73>
-   0x0000032e <+42>:    mov    0x1c(%esp),%eax
-   0x00000332 <+46>:    lea    0x0(,%eax,4),%edx
-   0x00000339 <+53>:    mov    0xc(%ebp),%eax
-   0x0000033c <+56>:    add    %edx,%eax
-   0x0000033e <+58>:    mov    (%eax),%eax
-   0x00000340 <+60>:    mov    %eax,(%esp)
-   0x00000343 <+63>:    call   0xb0 <ls>
-   0x00000348 <+68>:    addl   $0x1,0x1c(%esp)
-   0x0000034d <+73>:    mov    0x1c(%esp),%eax
-   0x00000351 <+77>:    cmp    0x8(%ebp),%eax
-   0x00000354 <+80>:    jl     0x32e <main+42>
-   0x00000356 <+82>:    call   0x5cb <exit>
+0x00000305 <+1>:     mov    %esp,%ebp
+0x00000307 <+3>:     and    $0xfffffff0,%esp
+0x0000030a <+6>:     sub    $0x20,%esp
+0x0000030d <+9>:     cmpl   $0x1,0x8(%ebp)
+0x00000311 <+13>:    jg     0x324 <main+32>
+0x00000313 <+15>:    movl   $0xb5f,(%esp)
+0x0000031a <+22>:    call   0xb0 <ls>
+0x0000031f <+27>:    call   0x5cb <exit>
+0x00000324 <+32>:    movl   $0x1,0x1c(%esp)
+0x0000032c <+40>:    jmp    0x34d <main+73>
+0x0000032e <+42>:    mov    0x1c(%esp),%eax
+0x00000332 <+46>:    lea    0x0(,%eax,4),%edx
+0x00000339 <+53>:    mov    0xc(%ebp),%eax
+0x0000033c <+56>:    add    %edx,%eax
+0x0000033e <+58>:    mov    (%eax),%eax
+0x00000340 <+60>:    mov    %eax,(%esp)
+0x00000343 <+63>:    call   0xb0 <ls>
+0x00000348 <+68>:    addl   $0x1,0x1c(%esp)
+0x0000034d <+73>:    mov    0x1c(%esp),%eax
+0x00000351 <+77>:    cmp    0x8(%ebp),%eax
+0x00000354 <+80>:    jl     0x32e <main+42>
+0x00000356 <+82>:    call   0x5cb <exit>
 ```
 
-- How to read this? Format explain.
+This is a lot of code, and we are not going to understand all of
+it. Here's how to read it. In the first line, `=>` means that this is
+the instruction we are about to execute, but haven't yet. `0x00000304`
+is the address of the instruction written in *base 16* or
+*hexadecimal* or *hex* - this is where instruction lives in
+memory. Another way of writing the above address is to omit the
+leading zeros, so simply `0x304` (0x means it's a hexadecimal
+number). `<+0>` is an offset that we are going to ignore. `push` is a
+*mnemonic* or an *instruction*, and its argument in this case is
+`%ebp`.
 
-Look at the assembly, what do we see? We can see that there's calls to
-<ls> and <exit>, and then later a call to <ls>, and then at the very
-end another call to <exit>. These are the function call we can see in
-the C code, so we have already learned something about how to read assembly.
+Without knowing anything about assembly, you might notice that the
+`call` instruction occurs several times, and that one of its arguments
+is `ls` and `exit`. This corresponds to the four function calls we see
+in our main function.
 
-### The Registers EIP, ESP and EBP and the Stack
+## The Stack
 
-Registers store data for processor. There are many types of these, but
-we are going to focus on three which are essential in understanding
-how things move around. Note: there are many diff names depending on
-arch, IP->EIP->RIP.
+When we write programs, we don't usually write a series of
+instructions for the computer to execute. Instead, we use *structured
+programming* and *subroutines* that call each other and can be used
+multiple times. If we follow the execution of a program by pointing at
+the screen we might say "this calls this, which calls this, then it
+returns here". The stack is how the computer keeps track of things
+like this, where it came from, what the argument of a function are,
+etc.
+
+Let's have a look at what's on the stack before we have executed a
+single instruction. We can do this using GDB's `x` command, which
+allows us to inspect memory at a given address. It takes two
+arguments: a format and an address.
 
 ```
-(gdb) info reg eip esp ebp
-eip            0x304    0x304 <main>
-esp            0x2fe8   0x2fe8
-ebp            0x3fb8   0x3fb8
+(gdb) x /x $esp
+0x2fe8: 0xffffffff
 ```
 
-This tells us what is inside these three registers. 0x means it's in
-hexadecimal, so this just an integer, but it's essentially an index
-for the computer. Sort of like saying "the forks are in the second
-drawer".
+This means that $esp is set to `0x2fe8` and the content of it is
+`0xffffffff`. This is what's on top of the stack. We can see a bit
+more of what's on the stack with the following.
 
-EIP is the instruction pointer. This is where "the computer"
-(processor) is executing right now.
+```
+(gdb) x /4x $esp
+0x2fe8: 0xffffffff      0x00000001      0x00002ff4      0x00002ffc
+```
 
-The numbers are hexadecimal (base 16) addresses.
+In this case, the format `4x` means "show me 4 words in hex". A word
+is 4 bytes long. A byte is 8 bits long and 8 times 4 is 32, which is
+how big are our addresses and registers are. This makes sense, since
+we are running on a 32-bit architecture. `$esp` is a special
+*register* called *(extended) stack pointer*. Registers store data for
+the processor for easy access.
 
--x for inspect memory. explain it.
+At any given time, the stack pointer points to the top of the
+*stack*. In the above output, `0x2fe8` is the value of $esp, and it
+points to `0xffffffff`. We can also write the above in a slighlty more
+verbose way, for clarity:
 
-Note that eip is the same as the very first instruction (extra zeroes
-are sometimes removed when printing). If we run `x /4i $eip` we see
-the coming 4 instructions. Since we are at the very beginning of main,
-these are the same as the assembly code generated above by
-`disassemble`.
+```
+0x2fe8: 0xffffffff <--- ESP
+0x2fec: 0x00000001
+0x2ff0: 0x00002ff4
+0x2ff4: 0x00002ffc
+```
+
+There's some confusion about what a stack is. In the abstract sense,
+it's a *LIFO* (last in first out) data structure that supports two
+primary operations: *push* and *pop*. What might be confusing is that
+it's normally conceptualized as a stack of plates, growing upwards. In
+this context, the stack grows down (in terms of addresses) but the
+last touched entry is still called the top of the stack. Notice that
+the top of the stack has the lowest address. This might be
+counterintuitive, but "top" is an abstract term and it doesn't become
+less of a stack because it's growing down.
+
+If those four addresses show what's on the stack before we have even
+executed a single instruction in our main function, what do they mean?
+To understand that we have to talk about *calling
+conventions*. Different programming languages have different calling
+convention, and sometimes it can even differ on different computer
+architecture. If you use C, most of them are quite similar though,
+with minor differences (for example, if we use certain compiler
+optimizations). First we push the arguments of the function, in
+reverse order, and then we push the return address, or the return PC
+(program counter). Calling conventions cover a lot more than this, and
+we will see some more usese of this in later sections.
+
+What does this mean in our case? Our main function takes two
+arguments, argc and argv. We can see what the value of those are:
+
+
+```
+0x2fe8: 0xffffffff    <- -1, fake return address for main
+0x2fec: 0x00000001    <- 1, argc value 
+0x2ff0: 0x00002ff4    <- argv, pointer to argv[0]
+0x2ff4: 0x00002ffc    <- "ls", value of argv[0]
+```
+
+Since we know the value of argv[0] will be in that position, we can
+cast it to a char* (string) to see its value. Likewise, we can do the
+same for the fake main return address:
+
+```
+(gdb) print (char*)0x00002ffc
+$83 = 0x2ffc "ls"
+(gdb) print (int)0xffffffff
+$88 = -1
+```
+
+Note that main is a bit special since it has no place to return to,
+hence its "return address" is just -1. If you are confused about how
+that number can be -1, here's what it looks like in binary using the
+format `\t`, which in two's complement is -1. If it is -1, we would
+expect it to be equal to 0 when we add 1 to it. And indeed:
+
+```
+(gdb) print /t 0xffffffff
+$35 = 11111111111111111111111111111111
+(gdb) print 0xffffffff + 1
+$36 = 0
+```
+
+## One instruction at a time
+
+We are now going to step through the beginning of the program,
+instruction by instruction. We can see the first four instruction that
+are about to be executed by running the following.
 
 ```
 (gdb) x /4i $eip
@@ -141,365 +223,245 @@ these are the same as the assembly code generated above by
    0x30a <main+6>:      sub    $0x20,%esp
 ```
 
-A stack is LIFO - last in first out. Two main operationd - push and pop.
+`$eip` is a register that's called an *(extend) instruction
+pointer*. This tells us where we are executing right now. The format
+we are using interprets the next 4 words in memory as
+instructions. There are no guardrails here - you have to be careful
+about if you are casting an int to a char*, or if you read addresses
+as instructions, etc. Sometimes you get an error message from GDB, but
+far from all the time.
 
-(We also have CALL and RET.)
+These four instructions are called the *function prologue*. What does
+the stack look like after we perform these instructions?
 
-(These are calling conventions, not universal ~ when no apply? gist tho.)
-
-Let's look at the two first lines of that assembly.
-
-```
-push   %ebp
-mov    %esp,%ebp
-```
-
-push adds data to the stack. What does this mean?
-
-TODO: explain basics of stack here or why we might want it?  when we write
-programs, we don't (anymore) write it just as a series of instructions
-of the computer to execute. Instead, we use "structured programming"
-or subfunctions that call each other. If we follow the execution of a
-code by pointing at the screen we might say "this calls this, which
-calls this, then it comes back here". The stack is how the computer
-keeps track of things like, where it came from, what its arguments
-are, etc.
-
-We can step one instruction at a time by `si`. If we do this, we just
-performed the push (explain that the thing we see is what we are about
-to do) and we should expect the stack to have changed.
-
-(can use $eip-1 to show context)
-
-The stack pointer points to the stack, and indeed we see:
+Let's do it one by one using GDB's `stepi` function. After `push %ebp`
+this is the stack:
 
 ```
-(gdb) x /x $esp
-0x2fe4: 0x00003fb8
+0x2fe4: 0x00003fb8  <--- ESP
+0x2fe8: 0xffffffff
+0x2fec: 0x00000001
+0x2ff0: 0x00002ff4
 ```
 
-0x2f34 is the location of the stack pointer and it contains the
-address of the base pointer.
-
-Wait, why did esp change? It was something else before this
-instruction, and there was nothing in that line about $esp. That's
-because PUSH instruction is a "macro" - in fact a push instruction can
-be seen as two instructions in one.
-
-```push $ebp``` is equivalent to
+Note that two things have happened: we have moved the stack pointer up
+(or down, in terms of memory location) an address, and put a new value
+in there. The push instruction does both of those things one after
+another. This is slightly tricky as there's no mention of $esp in that
+instruction, but yet it changed our stack pointer. There are only a
+few instructions like these though: `push`, `pop`, `call`, `ret` and a
+few others. Another way to write `push $ebp` is as follows:
 
 ```
-sub $4 $esp
+sub $0x4 $esp
 mov $ebp ($esp)
 ```
 
-(Register names have %.) This subtracts 4 from $esp, since 32-bit
-machine and byte 8, 4*8=32. Just two numbers - pointers address bytes,
-so you subtract 4 bytes from esp (x86-32, in 64 it'd be 8). The second
-instruction moves the register $ebp into what the esp register points
-to.
+This subtracts 4 from the stack pointer and puts $ebp in whatever the
+stack pointer is pointing to. $esp is the address of the stack
+pointer, and ($esp) is what the stack pointer points to.
 
-Like pointers in C, parantheses is a way to dereference what something
-is pointing to. so $esp is the address of the stack pointer, and
-($esp) is what the stack pointer points to.
+After `mov %esp, %ebp` nothing changes on the stack. This moves our
+stack pointer into the *base pointer* address.
 
-To illustrate:
-- (maybe have both before and after?)
+What is $ebp? It stands for *(extended) base pointer* (or sometimes
+it's called a frame pointer, depending on the architecture). The idea
+is that the stack pointer changes throughout the function as variables
+and registers are pushed and popped, but the base pointer stays the
+same throughout. That means that we can use the base pointer as an
+anchor to find parameters and local variables. For example, if you
+look at the first assembly code listing, you can see that there are
+things like `0x8(%ebp)`. This takes the content of %ebp but offset by
+8, which is two words, and in this case that's where argc is
+located. Note that the base pointer isn't strictly necessary, since we
+(or rather, our compiler) can do this arithmetic itself, but it can be
+convenient.
 
-The stack grows "down".
-
-```
-(gdb) x /x $esp
-0x2fe8: 0xffffffff
-```
-
-After we have pushed $ebp:
-
-```
-(gdb) x /2x $esp
-0x2fe4: 0x00003fb8      0xffffffff
-```
-(how to read that, pr do in two steps)
-
-Illustration, mby old:
-
-```
-address | content                     (before)
------------------
-0x2fe8  | 0xfffffff  <-- ESP
-
-address | content                     (after)
------------------
-0x2fe4: 0x00003fb8   <-- ESP
-
-or with x/2x $esp:
-
-address | content                     (after)
------------------
-0x2fe8  | 0xffffffff
-0x2f34  | 0x00003fb8 <-- ESP
-```
-
-(Because main is the entry point of the program, there's nothing to
-return to. 0xffffffff is a "fake PC" and is equivalent to -1 in two's
-complement. This isn't essential for understanding.)
-
-Ok, now $ebp is on "the stack", whatever that means. what about the second line?
+Let's move on. The next instruction is `and $0xfffffff0,%esp`, and
+it's a so called stack alignment (`0xfffffff0` is -16 in hex, using
+two's complement). It ensures that the stack pointer will be at its
+current position in memory, or at a lower one, but more importantly
+that it will be at a 16-byte boundary. Why this is done is outside of
+the scope of this article, but it has to do with performance and being
+able to do several instructions in parallel on certain architectures
+with something called *SIMD*. We can see that the stack pointer is
+evenly divided by 16 with `print 0x2fe0 % 16` (or just by looking at
+the last position in the hex number, since that's the "16"-th
+position). This is what the stack looks like now:
 
 ```
-mov    %esp,%ebp
-```
-
-This moves the esp register into ebp. Indeed:
-
-```
-(gdb) x /1x $ebp
+0x2fe0: 0x00000000  <--- ESP
 0x2fe4: 0x00003fb8
+0x2fe8: 0xffffffff
+0x2fec: 0x00000001
 ```
 
-There's something I didn't tell you. The arguments to main are also on
-the stack!
+After `sub $0x20,%esp`, which subtracts `0x20` (2 times 16 is 32 in
+decimal) from our stack pointer, we've made room for 32 bytes on the
+stack. This is used for local variables in main.
+
+```
+(gdb) x /12x $esp
+0x2fc0: 0x00000000      0x00000000      0x00000000      0x00000000
+0x2fd0: 0x00000000      0x00000000      0x00000000      0x00000000
+0x2fe0: 0x00000000      0x00003fb8      0xffffffff      0x00000001
+```
+
+We will show the stack using the more concise format from now on.
+
+We've now performed four instructions in main and this is the end of
+the *function prologue*. Something similar to this is done in every
+function. There's also an *function epilogue* - and of course the main
+meat of the function in between.
+
+## Calling ls
+
+If we step two more instructions (`stepi 2`) we get to:
+
+```
+movl   $0xb5f,(%esp)
+```
+
+which puts 0xb5f on the stack without changing the stack pointer (good
+thing we made room for local variables before so we didn't overwrite
+our stack!) What is that? Just like was done to `main` in the very
+beginning, before we call the `ls` (the function, not the program) we
+push the argument on the stack. We know there's only one argument and
+that it should be a string, and we can see the true nature of it by
+casting it to a char*:
+
+```
+print (char*)0xb5f
+$2 = 0xb5f "."
+(gdb) x /4x $esp
+0x2fc0: 0x00000b5f      0x00000000      0x00000000      0x00000000
+```
+
+The next instruction is `call 0xb0 <ls>`. `call` does two things, it
+pushes the address of the next instruction in `main` onto the stack,
+and then it jumps to a subprogram (which is just another address in
+memory, but since our program was compiled with debug information on
+we can see that it says `<ls>`). After executing that instruction our
+stack and our upcoming four instructions to execute looks like this:
 
 ```
 (gdb) x /4x $esp
+0x2fbc: 0x0000031f      0x00000b5f      0x00000000      0x00000000
+(gdb) x /4i $eip
+=> 0xb0 <ls>:   push   %ebp
+   0xb1 <ls+1>: mov    %esp,%ebp
+   0xb3 <ls+3>: push   %edi
+   0xb4 <ls+4>: push   %esi
+```
+
+We are now in the `ls` function, and `0xb0`, which was an argument to
+call, is what our instruction pointer is set to. You might recognize
+the two first lines from the prologue in our main function.
+
+What about `0x0000031f` that's now on top of our stack? It's the
+address where the program should keep executing once the ls function
+returns. We can confirm this by looking at it's memory location as
+instructions. These are exactly the instructions that come after the
+call to ls (see the code section above).
+
+```
+(gdb) x /4i 0x0000031f
+   0x31f <main+27>:     call   0x5cb <exit>
+   0x324 <main+32>:     movl   $0x1,0x1c(%esp)
+   0x32c <main+40>:     jmp    0x34d <main+73>
+   0x32e <main+42>:     mov    0x1c(%esp),%eax
+```
+
+We are still in ls though. Let's step two more instructions, pushing
+the base pointer onto the stack and moving (or "saving") the stack
+pointer to the base pointer.
+
+```
+(gdb) x /4x $esp
+0x2fb8: 0x00002fe4      0x0000031f      0x00000b5f      0x00000000
+```
+
+Note that the new address on the stack is our old base pointer from
+main. We've seen this before, but let's take a look again.
+
+```
+(gdb) x /4x 0x00002fe4
 0x2fe4: 0x00003fb8      0xffffffff      0x00000001      0x00002ff4
 ```
 
-We could also see this by printing out one at a time, decrementing
-$esp - which is just an integer, by 4 using `x $esp+4`.
+This is exactly our stack at the beginning of main, so we now have
+easy access to that state for when we want to go back to it.
 
-0x2ff4 is the first that was pushed, that's the argv, then argc, then
-return address is 0xfff... which is -1, since nothing to return
-to. Will see more when going to ls. Then we have ebp, which we just
-pushed.
+## Skipping until the end of ls
 
-Can see if we call `info frame` too (haven't explained frames yet!).
-
-```
-(gdb) info frame
-Stack level 0, frame at 0x2fec:
- eip = 0x305 in main (ls.c:75); saved eip = 0xffffffff
- source language c.
- Arglist at 0x2fe4, args: argc=1, argv=0x2ff4
- Locals at 0x2fe4, Previous frame's sp is 0x2fec
- Saved registers:
- ebp at 0x2fe4, eip at 0x2fe8
-```
-
-- (So why did we do that?)
-
-We can run `step` to step through source code, so instead of
-instruction by instruction we go line by line in C.
-
-Talk about aligning the stack and making room for args? Let's see if
-it happens again in ls, think so.
-
-Keep that stringent: understanding the stack.
-
-Next call / instruction:
-
-`AND 0xfffffff0 $ESP` - this is called stack alignment. Using two's
-complement (?), this is -16. ANDing that together with esp means $esp
-will be at current or at 16 byte boundary. This is for "basic
-optimization" (?) - or rather, for things like SIMD, but that's
-outside of scope of article (https://en.wikipedia.org/wiki/SIMD /
-https://en.wikipedia.org/wiki/Streaming_SIMD_Extensions mby). You can
-see that it's evenly divided by 16 with: `p 0x2fe0 % 16`.
-
-(but why before? I don't really get it).
-
-now stack looks like:
-```
-(gdb) x /6x $esp
-0x2fe0: 0x00000000      0x00003fb8      0xffffffff      0x00000001
-0x2ff0: 0x00002ff4      0x00002ffc
-```
-
-TODO: Also, ddin't talk about EBP! What is the purpose of EBP?
-
-What about other thing? why sub 20 exactly? Make room for stuff, local variables.
-
-```sub    $0x20,%esp```
-
-Why 20?
-
-big picture: it's a frame. :$
-
-right before:
+There's a lot that happens in `ls` and the functions it calls. We are
+going to skip all that by going to the very last line of the C code in
+the ls function, line 71. We do this with `until 71`. When we are at
+the end of `ls`, what's about to happen now and what does the stack
+look like?
 
 ```
-(gdb) x /6x $esp
-0x2fe0: 0x00000000      0x00003fb8      0xffffffff      0x00000001
-0x2ff0: 0x00002ff4      0x00002ffc
+(gdb) x /6i $eip
+=> 0x2f9 <ls+585>:      add    $0x25c,%esp
+   0x2ff <ls+591>:      pop    %ebx
+   0x300 <ls+592>:      pop    %esi
+   0x301 <ls+593>:      pop    %edi
+   0x302 <ls+594>:      pop    %ebp
+   0x303 <ls+595>:      ret
+(gdb) x /4x $esp
+0x2d50: 0x00000003      0x00002d88      0x00000010      0x00000001
 ```
 
-let's step!
-
-yay
-(gdb) p (char*)0xb5f
-$7 = 0xb5f "."
-
-Ok with `ls foo`
-
-
-```
-(gdb) x /5x $esp
-0x2fe0: 0xffffffff      0x00000002      0x00002fec      0x00002ffc
-0x2ff0: 0x00002ff8
-```
+We don't know what those things on the stack are, but presumably they
+come from something ls did - in fact, we would have to run `x /170x
+$esp` to begin to see addresses that we recognize on our stack. That's
+okay though, we are about the clean that stack up with the function
+epilogue. Essentially the five first instructions are the opposite of
+subtracting and pushing things onto the stack. If we step through them
+with `stepi 5` we get:
 
 ```
-(gdb) p (char*)0x00002ffc
-$30 = 0x2ffc "ls"
-(gdb) p (char*)0x00002ff8
-$31 = 0x2ff8 "foo"
+(gdb) x /4x $esp
+0x2fbc: 0x0000031f      0x00000b5f      0x00000000      0x00000000
 ```
-pretty cool! in reverse order: argv 2, 
 
-- show print line by line
-
-## A restart (integrate with above)
-
-Want to break at main.
-
-See this: ```Breakpoint 1, main (argc=2, argv=0x2fec) at ls.c:75```
-
-What's on the stack?
-(gdb) x /5x $esp
-0x2fe0: 0xffffffff      0x00000002      0x00002fec      0x00002ffc
-0x2ff0: 0x00002ff8
-
-(gdb) x /8x $esp
-0x2fe0: 0xffffffff      0x00000002      0x00002fec      0x00002ffc
-0x2ff0: 0x00002ff8      0x00000000      0x006f6f66      0x0000736c
-
-No idea what those other things are.
-
-If we didn't have ls foo we'd just need top 4, like above.
-
-- EDIT THIS SHIET.
-
-
-
-
-
-
-
-
-
-
-
-Anyway, keep moving. Then delete.
-
-- CDECL calling convention
-
-- argc/arv?
-
-- aligning the stack, and call
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-### Let's add a syscall!
-
-
-### Further resources
-
-If you want to learn more, check out Carter and Brennan, and Cox.
-
-
-
-
-
-
-
-
-
-
-
-
-
-1. Let's trace an ordinary system call.
-
-Which? sleep? wait? getpid? mkdir? Looks reasonably simple. But maybe take
-something like fstat that uses argptr.
-
-sys_fstat, calls filestat, which just gets some metadata about a file. good
-example methinks.
-
-file.h has file struct, stat.h has a stat.
-
-ALT look at procs. Files and procs are the most important parts, no?
-
-What is the hardest part about understanding systems programming things? We will
-look into the file system more later but.
-
-What about the stack and these things? That's something you struggled with a
-lot. Understanding what goes on GDB level.
-
-Also, maybe I could make a live video of this? Just stepping through it.
-
-So what would I want to see?
-
-Stepping through GDB to understand what's at the stack. How does user and kernel
-stack interplay? This is a big one, I think tonight after pairing.
-
-WHATS ON THE STACK? GDB AND KERNELY STUFF.
-
-Show, don't tell.
-
-Multiple GDB sessions.
-
-
-when we do ls, how do we get the actual info? where does it com from? inside
-fstat etc.
-
-suppress detail, but only the rightkind. zoom in on fstat.
-
-similar fstat. Later tonight.
-explian things here
-root@xv6:~/xv6# grep fstat *.[chS]
-
-GDB stuff:
-https://www.youtube.com/watch?v=WJaTW8RWrLw
-https://www.eecs.umich.edu/courses/eecs373/readings/Debugger.pdf
-http://heather.cs.ucdavis.edu/~matloff/UnixAndC/CLanguage/Debug.html
-
-http://beej.us/guide/bggdb/
-
-
-What was missing from the last one? Divide it up into pieces?
-
-When is a system call invoked?
-
-
-function syscall that takes checks if it is in a table etc.
-
-
-
-
-2. Adding a system call to xv6. How are sys calls implemented?
-
-Here's the files changed: date.c syscall.c syscall.h sysproc.c user.h usys.S
-
-In user.h: +int date(struct rtcdate*).
-
-Actual implementation in sysproc.
-
-Tracing a system call. Hm.
-
+Before we did that our stack pointer was set to `0x2d50`, and now it's
+back to `0x2fbc`. As a sanity check on what's going on, we can see
+that everything seems OK: we just cleaned up 620 bytes, of which the
+first `add $0x25c, %esp` took care of 604. `pop` was called four
+times, and 4 times 4 bytes (the size of each register that we popped)
+is 16, which takes care of the rest.
+
+```
+print  0x2fbc - 0x2d50
+$3 = 620
+print 0x25c
+$4 = 604
+```
+
+Our stack pointer is now back at `02fbc`, which was what our stack
+looked like at the very beginning of the `ls` function, and the next
+instruction is a simple `ret`. What does `ret` do? It's the opposite
+of `call`: it pops off an address, and jumps to it. So without single
+stepping, we should expect it to jump to `0x0000031f` and set the
+stack pointer to `0x2fbc - 4` = `0x2fb8`. What is `0x31f` again? It's
+the next line in `main` after calling `ls`. Let's single step it:
+
+```
+x /4x $esp
+0x2fc0: 0x00000b5f      0x00000000      0x00000000      0x00000000
+x /4i $eip
+=> 0x31f <main+27>:     call   0x5cb <exit>
+   0x324 <main+32>:     movl   $0x1,0x1c(%esp)
+   0x32c <main+40>:     jmp    0x34d <main+73>
+   0x32e <main+42>:     mov    0x1c(%esp),%eax
+```
+
+Indeed, we are now back in `main` and are about to call `exit`, and
+our stack is back to the same state it was just before it was about to
+call `ls`.
+
+TODO: make small exercise?
+To check your understanding, write down what each thing on the stack is.
+
+TODO: make video of tracing
