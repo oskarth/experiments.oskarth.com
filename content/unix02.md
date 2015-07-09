@@ -5,35 +5,33 @@ title = "What's on the stack?"
 
 +++
 
-This is the third post in my series on Grokking xv6. We will look at system
-calls and how they work under the hood.
+This is the third post in my series on Grokking xv6. We will use GDB
+to understanding how the stack works. At the end of the post there's a
+video where we trace a system call from user space to kernel space and
+back.
 
 <!--more-->
 
 ## Introduction
 
-Let's begin with a word of warning: in this article there'll be a lot
-of things that you'll see that we won't explain. Instead, we are going
-to learn how to squint at the code, suppress detail and focus on what
-we want to do.
+I want to begin with a word of warning. In this article there'll be a
+lot of things that you'll see that we won't explain. Instead, we are
+going to learn how to squint at the code, suppress detail and focus on
+what we want to do. There are a lot of guides out there that present a
+fluffy view of reality, but I want to stay as faithful as possible to
+what you would actually see using GDB and a real code base.
 
-Hardest part for me was not having a good mental model of the stack
-and how it operates, will attempt to give this to you.
-
-TODO: Obsolete? More like one now
-
-Three purposes:
-1. See how a system call flows through the system.
-2. Learn how to use GDB to figure such things out.
-3. Learn about the stack.
+One of the hardest parts so far going through xv6 was not having a
+good mental model of the *stack* and how it operates, will attempt to
+comumnicate at least a part of this to you.
 
 ## Code
 
-We are going to look at some assembly. I do not expect you to
+We are going to look at some *assembly code*. I do not expect you to
 understand everything, instead we will look at a few things and see
 what they can teach us about the stack.
 
-Here's the C code for the main function in `ls.c`:
+Here's the C code for the *main function* in `ls.c`:
 
 ```
 int
@@ -54,10 +52,11 @@ main(int argc, char *argv[])
 This is the main entry point of `ls`. `argc` stands for *argument
 count*, and if main doesn't get more than two arguments (say, if you
 write `ls foo/bar`) it will call the function `ls` with the argument
-".", and after that it will call the `exit` function.
+`"."`, and after that it will call the `exit` function.
 
-We can get the assembly for our main function with the `disassemble`
-command in GDB:
+We can get the assembly code for our main function with the
+`disassemble` command in *GDB*. GDB is a debugger that allows us to
+see what is going on inside a program when it executes.
 
 ```
 (gdb) disassemble main
@@ -90,18 +89,27 @@ Dump of assembler code for function main:
 This is a lot of code, and we are not going to understand all of
 it. Here's how to read it. In the first line, `=>` means that this is
 the instruction we are about to execute, but haven't yet. `0x00000304`
-is the address of the instruction written in *base 16* or
+is the *address* of the *instruction* written in *base 16* or
 *hexadecimal* or *hex* - this is where instruction lives in
-memory. Another way of writing the above address is to omit the
-leading zeros, so simply `0x304` (0x means it's a hexadecimal
-number). `<+0>` is an offset that we are going to ignore. `push` is a
+memory. `<+0>` is an offset that we are going to ignore. `push` is a
 *mnemonic* or an *instruction*, and its argument in this case is
-`%ebp`.
+`%ebp`. We will talk more about instructions and what their arguments
+mean in later sections.
+
+How does hexadecimal work? The *decimal* alphabet consists of the
+numbers 0 through 9, and the *binary* alphabet consists of 0
+and 1. Similarly, the hexadecimal alphabet has 16 "numbers" - 0
+through 9 and then A through F. For example, 15 would be written
+simply as "E", and 17 as "11". To differentiate between hexadecimal
+numbers and decimal we use the *prefix* "0x", so 11 is 11 but "0x11"
+is 17. *Addresses* in the computer's memory can be very long, so
+instead of writing `0x00000304` we can omit the leading zeroes and
+write `0x304` instead.
 
 Without knowing anything about assembly, you might notice that the
 `call` instruction occurs several times, and that one of its arguments
-is `ls` and `exit`. This corresponds to the four function calls we see
-in our main function.
+is `<ls>` and `<exit>`. This corresponds to the four function calls we
+see in our main function.
 
 ## The Stack
 
@@ -118,6 +126,10 @@ Let's have a look at what's on the stack before we have executed a
 single instruction. We can do this using GDB's `x` command, which
 allows us to inspect memory at a given address. It takes two
 arguments: a format and an address.
+
+We will see a lot of "code boxes" as we move on. Lines starting with
+`(gdb)` are lines that we write as input, and the other lines are
+things GDB shows us.
 
 ```
 (gdb) x /x $esp
@@ -358,7 +370,7 @@ We are now in the `ls` function, and `0xb0`, which was an argument to
 call, is what our instruction pointer is set to. You might recognize
 the two first lines from the prologue in our main function.
 
-What about `0x0000031f` that's now on top of our stack? It's the
+What about `0x0000031f` that is now on top of our stack? It's the
 address where the program should keep executing once the ls function
 returns. We can confirm this by looking at it's memory location as
 instructions. These are exactly the instructions that come after the
@@ -396,9 +408,9 @@ easy access to that state for when we want to go back to it.
 
 There's a lot that happens in `ls` and the functions it calls. We are
 going to skip all that by going to the very last line of the C code in
-the ls function, line 71. We do this with `until 71`. When we are at
-the end of `ls`, what's about to happen now and what does the stack
-look like?
+the ls function, line 71. We do this with the GDB command `until
+71`. When we are at the end of `ls`, what's about to happen now and
+what does the stack look like?
 
 ```
 (gdb) x /6i $eip
@@ -461,7 +473,43 @@ Indeed, we are now back in `main` and are about to call `exit`, and
 our stack is back to the same state it was just before it was about to
 call `ls`.
 
-TODO: make small exercise?
-To check your understanding, write down what each thing on the stack is.
 
-TODO: make video of tracing
+
+As we touched on earlier, another word for `0x31f` is frame
+pointer. That's because it points to a *stack frame*, which is, in a
+sense, what the stack consists of. A stack frame has all the
+information a given function needs - it's arguments, return address
+and space for local variables. GDB comes with some built-in functions
+that makes it easier to get information about stack frames. If we were
+in the middle of the `ls` function we could do the following:
+
+```
+(gdb) info stack
+#0  ls (path=path@entry=0xb5f ".") at ls.c:33
+#1  0x0000031f in main (argc=1, argv=0x2ff4) at ls.c:79
+```
+
+This tells us that we are in stack frame #0, executing instructions
+in, and we came from main. Notice that the base pointer `0x31f` is
+there. If you have used a high-level language you might recognize this
+as a *stack trace*, but now you hopefully have some idea of where came
+from. We will see some neat usages of this, jumping between stack
+frames to see what's going on, in the video below.
+
+## Conclusion and demo
+
+We started off looking at a simple piece of C code and its equivalent
+assembly code. We then inspected the stack before a single instruction
+had been executed, and we then carefully went through the first few
+instructions in that function to see how the stack frame was set
+up. Then we saw how another function, ls, was called and how that
+changed the stack, preserving the stack state of the calling
+function. We then skipped a whole bunch of code only to catch our
+stack being cleaned up, and finally getting returned to the main
+function again with its stack frame intact.
+
+I hope this was useful and that you learned something. Here's the
+video that was promised. In it we trace a system call from user space
+to kernel space and back.
+
+<VIDEO-LINK>
