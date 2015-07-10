@@ -508,6 +508,5 @@ function again with its stack frame intact.
 Here's the video that was promised. In it we trace a system call from
 user space to kernel space and back.
 
-<div style = "text-align:center"> <iframe width="560" height="315"
-src="https://www.youtube.com/embed/O5bLJKMLIG4" frameborder="0"
-allowfullscreen></iframe></div>
+<div style = "text-align:center">
+<iframe width="560" height="315" src="https://www.youtube.com/embed/TWksEdn5eoA" frameborder="0" allowfullscreen></iframe></div>

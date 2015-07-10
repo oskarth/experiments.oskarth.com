@@ -6,8 +6,498 @@
     <description>Recent content on Experi</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 26 Jun 2015 19:00:00 +0200</lastBuildDate>
+    <lastBuildDate>Tue, 07 Jul 2015 19:52:26 +0200</lastBuildDate>
     <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>What&#39;s on the stack?</title>
+      <link>http://localhost:1313/unix02/</link>
+      <pubDate>Tue, 07 Jul 2015 19:52:26 +0200</pubDate>
+      
+      <guid>http://localhost:1313/unix02/</guid>
+      <description>
+
+&lt;p&gt;This is the third post in my series on Grokking xv6. We will use GDB
+to understanding how the stack works in detail. At the end of the post
+there&amp;rsquo;s a video where we trace a system call from user space to kernel
+space and back.&lt;/p&gt;
+
+&lt;h2 id=&#34;introduction:6ae9618849cb95f299eb0577bfe82265&#34;&gt;Introduction&lt;/h2&gt;
+
+&lt;p&gt;I want to begin with a word of warning. In this article there&amp;rsquo;ll be a
+lot of things that you&amp;rsquo;ll see that we won&amp;rsquo;t explain. Instead, we are
+going to learn how to squint at the code, suppress detail and focus on
+what we want to do. There are a lot of guides out there that present a
+fluffy view of reality, but I want to stay as faithful as possible to
+what you would actually see using GDB and a real code base.&lt;/p&gt;
+
+&lt;p&gt;One of the hardest parts so far
+&lt;a href=&#34;http://experiments.oskarth.com/unix00/&#34;&gt;going through xv6&lt;/a&gt; was not having a
+good mental model of the &lt;em&gt;stack&lt;/em&gt; and how it operates, I will attempt
+to communicate at least a part of this to you.&lt;/p&gt;
+
+&lt;h2 id=&#34;code:6ae9618849cb95f299eb0577bfe82265&#34;&gt;Code&lt;/h2&gt;
+
+&lt;p&gt;We are going to look at some &lt;em&gt;assembly code&lt;/em&gt;. I do not expect you to
+understand everything. Instead we will look at a few things and see
+what they can teach us about the stack.&lt;/p&gt;
+
+&lt;p&gt;When we type &lt;code&gt;ls&lt;/code&gt; in a terminal, the shell takes care of parsing the
+input and then passes the control to the &lt;code&gt;ls&lt;/code&gt; program, &lt;code&gt;ls.c&lt;/code&gt;, which
+is written in C. Here&amp;rsquo;s the &lt;em&gt;main function&lt;/em&gt; of that file:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;int
+main(int argc, char *argv[])
+{
+  int i;
+
+  if(argc &amp;lt; 2){
+    ls(&amp;quot;.&amp;quot;);
+    exit();
+  }
+  for(i=1; i&amp;lt;argc; i++)
+    ls(argv[i]);
+  exit();
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This is the main entry point of the &lt;code&gt;ls&lt;/code&gt; program. &lt;code&gt;argc&lt;/code&gt; stands for
+&lt;em&gt;argument count&lt;/em&gt;, and if main doesn&amp;rsquo;t get a second argument (&lt;code&gt;ls&lt;/code&gt;
+counts as the first argument to main) it will call the function &lt;code&gt;ls&lt;/code&gt;
+with the argument &lt;code&gt;.&lt;/code&gt;. After that it will call the &lt;code&gt;exit&lt;/code&gt; function.&lt;/p&gt;
+
+&lt;p&gt;We can get the assembly code for our main function with the
+&lt;code&gt;disassemble&lt;/code&gt; command in &lt;em&gt;GDB&lt;/em&gt;. GDB is a debugger that allows us to
+see what is going on inside a program when it executes. We will see a
+lot of &amp;ldquo;code boxes&amp;rdquo; as we move on. Lines starting with &lt;code&gt;(gdb)&lt;/code&gt; are
+lines that we write as input, and the other lines are things GDB shows
+us.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(gdb) disassemble main
+Dump of assembler code for function main:
+=&amp;gt; 0x00000304 &amp;lt;+0&amp;gt;:     push   %ebp
+0x00000305 &amp;lt;+1&amp;gt;:     mov    %esp,%ebp
+0x00000307 &amp;lt;+3&amp;gt;:     and    $0xfffffff0,%esp
+0x0000030a &amp;lt;+6&amp;gt;:     sub    $0x20,%esp
+0x0000030d &amp;lt;+9&amp;gt;:     cmpl   $0x1,0x8(%ebp)
+0x00000311 &amp;lt;+13&amp;gt;:    jg     0x324 &amp;lt;main+32&amp;gt;
+0x00000313 &amp;lt;+15&amp;gt;:    movl   $0xb5f,(%esp)
+0x0000031a &amp;lt;+22&amp;gt;:    call   0xb0 &amp;lt;ls&amp;gt;
+0x0000031f &amp;lt;+27&amp;gt;:    call   0x5cb &amp;lt;exit&amp;gt;
+0x00000324 &amp;lt;+32&amp;gt;:    movl   $0x1,0x1c(%esp)
+0x0000032c &amp;lt;+40&amp;gt;:    jmp    0x34d &amp;lt;main+73&amp;gt;
+0x0000032e &amp;lt;+42&amp;gt;:    mov    0x1c(%esp),%eax
+0x00000332 &amp;lt;+46&amp;gt;:    lea    0x0(,%eax,4),%edx
+0x00000339 &amp;lt;+53&amp;gt;:    mov    0xc(%ebp),%eax
+0x0000033c &amp;lt;+56&amp;gt;:    add    %edx,%eax
+0x0000033e &amp;lt;+58&amp;gt;:    mov    (%eax),%eax
+0x00000340 &amp;lt;+60&amp;gt;:    mov    %eax,(%esp)
+0x00000343 &amp;lt;+63&amp;gt;:    call   0xb0 &amp;lt;ls&amp;gt;
+0x00000348 &amp;lt;+68&amp;gt;:    addl   $0x1,0x1c(%esp)
+0x0000034d &amp;lt;+73&amp;gt;:    mov    0x1c(%esp),%eax
+0x00000351 &amp;lt;+77&amp;gt;:    cmp    0x8(%ebp),%eax
+0x00000354 &amp;lt;+80&amp;gt;:    jl     0x32e &amp;lt;main+42&amp;gt;
+0x00000356 &amp;lt;+82&amp;gt;:    call   0x5cb &amp;lt;exit&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This is a lot of code, and we are not going to understand all of it in
+this post. Here&amp;rsquo;s how to read it. The first line is the following:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;=&amp;gt; 0x00000304 &amp;lt;+0&amp;gt;:     push   %ebp
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;code&gt;=&amp;gt;&lt;/code&gt; means that this is the instruction we are about to execute, but
+haven&amp;rsquo;t yet. &lt;code&gt;0x00000304&lt;/code&gt; is the &lt;em&gt;address&lt;/em&gt; of the &lt;em&gt;instruction&lt;/em&gt;
+written in &lt;em&gt;base 16&lt;/em&gt; or &lt;em&gt;hexadecimal&lt;/em&gt; or &lt;em&gt;hex&lt;/em&gt; - this is where the
+instruction lives in memory. &lt;code&gt;&amp;lt;+0&amp;gt;&lt;/code&gt; is an offset that we are going to
+ignore. &lt;code&gt;push&lt;/code&gt; is a &lt;em&gt;mnemonic&lt;/em&gt; or an &lt;em&gt;instruction&lt;/em&gt;, and its argument
+in this case is &lt;code&gt;%ebp&lt;/code&gt;. We will talk more about instructions and what
+their arguments mean in later sections.&lt;/p&gt;
+
+&lt;p&gt;How does hexadecimal work? The &lt;em&gt;decimal&lt;/em&gt; alphabet consists of the
+numbers 0 through 9, and the &lt;em&gt;binary&lt;/em&gt; alphabet consists of 0
+and 1. Similarly, the hexadecimal alphabet has 16 &amp;ldquo;numbers&amp;rdquo; - 0
+through 9 and then A through F. For example, 14 would be written
+simply as &amp;ldquo;E&amp;rdquo;, and 17 as &amp;ldquo;11&amp;rdquo;. To differentiate between hexadecimal
+numbers and decimal we use the &lt;em&gt;prefix&lt;/em&gt; &amp;ldquo;0x&amp;rdquo;, so 11 is 11 but &amp;ldquo;0x11&amp;rdquo;
+is 17. &lt;em&gt;Addresses&lt;/em&gt; in the computer&amp;rsquo;s memory can be very long, so
+instead of writing &lt;code&gt;0x00000304&lt;/code&gt; we can omit the leading zeroes and
+write &lt;code&gt;0x304&lt;/code&gt; instead.&lt;/p&gt;
+
+&lt;p&gt;Without knowing anything about assembly, you might notice that the
+&lt;code&gt;call&lt;/code&gt; instruction occurs several times, and that its arguments is
+either &lt;code&gt;&amp;lt;ls&amp;gt;&lt;/code&gt; or &lt;code&gt;&amp;lt;exit&amp;gt;&lt;/code&gt;. These &lt;code&gt;call&lt;/code&gt; instructions correspond to the
+four function calls we see in our main function.&lt;/p&gt;
+
+&lt;h2 id=&#34;the-stack:6ae9618849cb95f299eb0577bfe82265&#34;&gt;The Stack&lt;/h2&gt;
+
+&lt;p&gt;If we follow the execution of a program by pointing at the screen we
+might say &amp;ldquo;this calls this, which calls this, then it returns
+here&amp;rdquo;. The stack is how the computer keeps track of things like this -
+where it came from, what the arguments of a function are, etc.&lt;/p&gt;
+
+&lt;p&gt;Let&amp;rsquo;s have a look at what&amp;rsquo;s on the stack before we have executed a
+single instruction. We can do this using GDB&amp;rsquo;s &lt;code&gt;x&lt;/code&gt; command, which
+allows us to inspect memory at a given address. It takes two
+arguments: a format and an address.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(gdb) x /x $esp
+0x2fe8: 0xffffffff
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;In this case &lt;code&gt;/x&lt;/code&gt; is the format and &lt;code&gt;$esp&lt;/code&gt; is the address. We see that
+$esp is set to &lt;code&gt;0x2fe8&lt;/code&gt; and the content of it is &lt;code&gt;0xffffffff&lt;/code&gt;. This is
+what&amp;rsquo;s on top of the stack. We can see a bit more of what&amp;rsquo;s on the
+stack with the following.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(gdb) x /4x $esp
+0x2fe8: 0xffffffff      0x00000001      0x00002ff4      0x00002ffc
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Here the format &lt;code&gt;/4x&lt;/code&gt; means &amp;ldquo;show me 4 &lt;em&gt;words&lt;/em&gt; in hex&amp;rdquo;. In GDB, a word
+is 4 &lt;em&gt;bytes&lt;/em&gt; (and a byte is always 8 bits). Addresses are one word, or
+32 bits, which is why it&amp;rsquo;s called a &lt;em&gt;32-bit architecture&lt;/em&gt;. &lt;em&gt;Registers&lt;/em&gt;
+are also 32 bits.&lt;/p&gt;
+
+&lt;p&gt;Registers store data for the &lt;em&gt;CPU&lt;/em&gt; for easy access. &lt;code&gt;esp&lt;/code&gt; is a special
+&lt;em&gt;register&lt;/em&gt; called &lt;em&gt;(extended) stack pointer&lt;/em&gt;, and &lt;code&gt;$esp&lt;/code&gt; is the way
+you reference it in GDB.&lt;/p&gt;
+
+&lt;p&gt;At any given time, the stack pointer points to the top of the
+stack. In the above output, &lt;code&gt;$esp&lt;/code&gt; is set to &lt;code&gt;0x2fe8&lt;/code&gt;, and it points
+to &lt;code&gt;0xffffffff&lt;/code&gt;. We can also write the above in a slightly more
+verbose way, for clarity. Each address on the left is offset by four
+from the one above it.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;0x2fe8: 0xffffffff &amp;lt;--- ESP
+0x2fec: 0x00000001
+0x2ff0: 0x00002ff4
+0x2ff4: 0x00002ffc
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;In the abstract sense, a stack is a &lt;em&gt;LIFO&lt;/em&gt; (last in first out) data
+structure that supports two primary operations: &lt;em&gt;push&lt;/em&gt; and &lt;em&gt;pop&lt;/em&gt;. It
+is normally conceptualized as a stack of plates, growing upwards. What
+might be confusing in this context is that the top of the stack has
+the lowest address. The stack grows down, in terms of addresses, but
+the last touched entry is still called the top of the stack. This
+might be counterintuitive, but &amp;ldquo;top&amp;rdquo; is an abstract term and it
+doesn&amp;rsquo;t become less of a stack because it&amp;rsquo;s growing down.&lt;/p&gt;
+
+&lt;p&gt;Recall that the four lines above show what&amp;rsquo;s on the stack before we
+have even executed a single instruction in our main function. What do
+they mean? Before a function is called, its arguments are pushed onto
+the stack, in reverse order, followed by the return address (also
+known as as the return program counter or return PC). This way of
+modifying the stack is part of a &lt;em&gt;calling convention&lt;/em&gt;. There are other
+calling conventions, but this is the most common one for C.&lt;/p&gt;
+
+&lt;p&gt;Our main function takes two arguments, argc and argv, whose values
+are:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;0x2fe8: 0xffffffff    &amp;lt;- -1, return address for main
+0x2fec: 0x00000001    &amp;lt;- 1, argc value 
+0x2ff0: 0x00002ff4    &amp;lt;- argv, pointer to argv[0]
+0x2ff4: 0x00002ffc    &amp;lt;- &amp;quot;ls&amp;quot;, value of argv[0]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;We can cast &lt;code&gt;0x00002ffc&lt;/code&gt; to a &lt;code&gt;char*&lt;/code&gt; (a string) to see its human
+readable representation. Likewise, we can do the same for main&amp;rsquo;s
+return address, &lt;code&gt;0xffffffff&lt;/code&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(gdb) print (char*)0x00002ffc
+$83 = 0x2ffc &amp;quot;ls&amp;quot;
+(gdb) print (int)0xffffffff
+$88 = -1
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;code&gt;main&lt;/code&gt; has a fake return address. Since it has no place to return to,
+it is simply set to -1.&lt;/p&gt;
+
+&lt;h2 id=&#34;one-instruction-at-a-time:6ae9618849cb95f299eb0577bfe82265&#34;&gt;One instruction at a time&lt;/h2&gt;
+
+&lt;p&gt;We are now going to step through the beginning of the program,
+instruction by instruction. We can see the first four instructions to
+be executed:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(gdb) x /4i $eip
+=&amp;gt; 0x304 &amp;lt;main&amp;gt;:        push   %ebp
+   0x305 &amp;lt;main+1&amp;gt;:      mov    %esp,%ebp
+   0x307 &amp;lt;main+3&amp;gt;:      and    $0xfffffff0,%esp
+   0x30a &amp;lt;main+6&amp;gt;:      sub    $0x20,%esp
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;We use the &lt;code&gt;/4i&lt;/code&gt; format to interpret the content of the four
+addresses, starting at &lt;code&gt;$eip&lt;/code&gt;, as instructions. There are no
+guardrails here - GDB doesn&amp;rsquo;t care if you read memory that represents,
+say, a number as an instruction.&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;$eip&lt;/code&gt; is a register that&amp;rsquo;s called an &lt;em&gt;(extended) instruction
+pointer&lt;/em&gt;. This points to the next instruction we are about to
+execute. These four instructions are called the &lt;em&gt;function
+prologue&lt;/em&gt;. What does the stack look like after we perform these
+instructions?&lt;/p&gt;
+
+&lt;p&gt;Let&amp;rsquo;s do it one by one using GDB&amp;rsquo;s &lt;code&gt;stepi&lt;/code&gt; function. After &lt;code&gt;push %ebp&lt;/code&gt;
+this is the stack:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;0x2fe4: 0x00003fb8  &amp;lt;--- ESP
+0x2fe8: 0xffffffff
+0x2fec: 0x00000001
+0x2ff0: 0x00002ff4
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Two things have happened: we have moved the stack pointer up an
+address, and put a new value there. The push instruction does both of
+those things one after another. This is slightly tricky as there&amp;rsquo;s no
+mention of &lt;code&gt;$esp&lt;/code&gt; in that instruction, but yet it changed our stack
+pointer. There are only a few instructions like these though: &lt;code&gt;push&lt;/code&gt;,
+&lt;code&gt;pop&lt;/code&gt;, &lt;code&gt;call&lt;/code&gt;, &lt;code&gt;ret&lt;/code&gt; and a few others. Another way to write &lt;code&gt;push
+$ebp&lt;/code&gt; is as follows:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;sub $0x4 $esp
+mov $ebp ($esp)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This subtracts 4 from the stack pointer and puts &lt;code&gt;$ebp&lt;/code&gt; in whatever
+the stack pointer is pointing to. &lt;code&gt;$esp&lt;/code&gt; is the address of the stack
+pointer, and &lt;code&gt;($esp)&lt;/code&gt; is what the stack pointer points to (just like
+with pointers in C):&lt;/p&gt;
+
+&lt;p&gt;What is &lt;code&gt;$ebp&lt;/code&gt;? It stands for &lt;em&gt;(extended) base pointer&lt;/em&gt; (or sometimes
+it&amp;rsquo;s called a frame pointer, depending on the architecture). The idea
+is that the stack pointer changes throughout the function as variables
+and registers are pushed and popped, but the base pointer stays the
+same throughout. That means that we can use the base pointer as an
+anchor to find parameters and local variables. For example, if you
+look at the first assembly code listing, you can see that there are
+things like &lt;code&gt;0x8(%ebp)&lt;/code&gt;. This takes the content of &lt;code&gt;%ebp&lt;/code&gt; but offset
+by 8, which is two words, and in this case that&amp;rsquo;s where argc is
+located.&lt;/p&gt;
+
+&lt;p&gt;The next instruction after the &lt;code&gt;push&lt;/code&gt; instruction is &lt;code&gt;mov %esp, %ebp&lt;/code&gt;
+nothing changes on the stack. This moves our stack pointer into the
+&lt;em&gt;base pointer&lt;/em&gt; address.&lt;/p&gt;
+
+&lt;p&gt;The third instruction is &lt;code&gt;and $0xfffffff0,%esp&lt;/code&gt;, and it&amp;rsquo;s a so called
+stack alignment (&lt;code&gt;0xfffffff0&lt;/code&gt; is -16 in hex, using two&amp;rsquo;s
+complement). It ensures that the stack pointer will be at its current
+position in memory, or at a lower one, but more importantly that it
+will be at a 16-byte boundary. Why this is done is outside of the
+scope of this article, but it has to do with performance and being
+able to do several instructions in parallel on certain architectures
+with something called &lt;em&gt;SIMD&lt;/em&gt;. We can see that the stack pointer is
+evenly divided by 16 with &lt;code&gt;print 0x2fe0 % 16&lt;/code&gt; (or just by looking at
+the last position in the hex number, since that&amp;rsquo;s the &amp;ldquo;16&amp;rdquo;-th
+position). This is what the stack looks like now:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;0x2fe0: 0x00000000  &amp;lt;--- ESP
+0x2fe4: 0x00003fb8
+0x2fe8: 0xffffffff
+0x2fec: 0x00000001
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;After &lt;code&gt;sub $0x20,%esp&lt;/code&gt;, which subtracts &lt;code&gt;0x20&lt;/code&gt; (2 times 16 is 32 in
+decimal) from our stack pointer, we&amp;rsquo;ve made room for 32 bytes on the
+stack. This is used for local variables in main.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(gdb) x /12x $esp
+0x2fc0: 0x00000000      0x00000000      0x00000000      0x00000000
+0x2fd0: 0x00000000      0x00000000      0x00000000      0x00000000
+0x2fe0: 0x00000000      0x00003fb8      0xffffffff      0x00000001
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;We will show the stack using the more concise format from now on.&lt;/p&gt;
+
+&lt;p&gt;We&amp;rsquo;ve now performed four instructions in main and this is the end of
+the &lt;em&gt;function prologue&lt;/em&gt;. Something similar to this is done in every
+function. There&amp;rsquo;s also an &lt;em&gt;function epilogue&lt;/em&gt; - and of course the main
+meat of the function in between.&lt;/p&gt;
+
+&lt;h2 id=&#34;calling-ls:6ae9618849cb95f299eb0577bfe82265&#34;&gt;Calling ls&lt;/h2&gt;
+
+&lt;p&gt;If we step two more instructions (&lt;code&gt;stepi 2&lt;/code&gt;) we get to:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;movl   $0xb5f,(%esp)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;which puts 0xb5f on the stack without changing the stack pointer (good
+thing we made room for local variables before so we didn&amp;rsquo;t overwrite
+our stack!) What is that? Just like was done to &lt;code&gt;main&lt;/code&gt; in the very
+beginning, before we call &lt;code&gt;ls&lt;/code&gt; (the function, not the program -
+henceforth we will just talk about the function &lt;code&gt;ls&lt;/code&gt; inside the &lt;code&gt;ls&lt;/code&gt;
+program) we push the argument on the stack. We know there&amp;rsquo;s only one
+argument and that it should be a string, and we can see the true
+nature of it by casting it to a char*:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;print (char*)0xb5f
+$2 = 0xb5f &amp;quot;.&amp;quot;
+(gdb) x /4x $esp
+0x2fc0: 0x00000b5f      0x00000000      0x00000000      0x00000000
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The next instruction is &lt;code&gt;call 0xb0 &amp;lt;ls&amp;gt;&lt;/code&gt;. &lt;code&gt;call&lt;/code&gt; does two things, it
+pushes the address of the next instruction in &lt;code&gt;main&lt;/code&gt; onto the stack,
+and then it &lt;em&gt;jumps&lt;/em&gt; to a subprogram (which is just another address in
+memory, but since our program was compiled with debug information on
+we can see that it says &lt;code&gt;&amp;lt;ls&amp;gt;&lt;/code&gt;). A jump changes the instruction
+pointer to its argument. After executing that instruction our stack
+and our upcoming four instructions to execute looks like this:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(gdb) x /4x $esp
+0x2fbc: 0x0000031f      0x00000b5f      0x00000000      0x00000000
+(gdb) x /4i $eip
+=&amp;gt; 0xb0 &amp;lt;ls&amp;gt;:   push   %ebp
+   0xb1 &amp;lt;ls+1&amp;gt;: mov    %esp,%ebp
+   0xb3 &amp;lt;ls+3&amp;gt;: push   %edi
+   0xb4 &amp;lt;ls+4&amp;gt;: push   %esi
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;We are now in the &lt;code&gt;ls&lt;/code&gt; function, and &lt;code&gt;0xb0&lt;/code&gt;, which was an argument to
+call, is what our instruction pointer is set to. You might recognize
+the two first lines from the prologue in our main function.&lt;/p&gt;
+
+&lt;p&gt;What about &lt;code&gt;0x0000031f&lt;/code&gt; that is now on top of our stack? It&amp;rsquo;s the
+address where the program should keep executing once the ls function
+returns. We can confirm this by looking at it&amp;rsquo;s memory location as
+instructions. These are exactly the instructions that come after the
+call to ls (see the code section above).&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(gdb) x /4i 0x0000031f
+   0x31f &amp;lt;main+27&amp;gt;:     call   0x5cb &amp;lt;exit&amp;gt;
+   0x324 &amp;lt;main+32&amp;gt;:     movl   $0x1,0x1c(%esp)
+   0x32c &amp;lt;main+40&amp;gt;:     jmp    0x34d &amp;lt;main+73&amp;gt;
+   0x32e &amp;lt;main+42&amp;gt;:     mov    0x1c(%esp),%eax
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;We are still in ls though. Let&amp;rsquo;s step two more instructions, pushing
+the base pointer onto the stack and moving (or &amp;ldquo;saving&amp;rdquo;) the stack
+pointer to the base pointer.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(gdb) x /4x $esp
+0x2fb8: 0x00002fe4      0x0000031f      0x00000b5f      0x00000000
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The new address on the stack is our old base pointer from main. We&amp;rsquo;ve
+seen this before, but let&amp;rsquo;s take a look again.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(gdb) x /4x 0x00002fe4
+0x2fe4: 0x00003fb8      0xffffffff      0x00000001      0x00002ff4
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This is exactly our stack at the beginning of main, so we now have
+easy access to that state for when we want to go back to it.&lt;/p&gt;
+
+&lt;h2 id=&#34;skipping-until-the-end-of-ls:6ae9618849cb95f299eb0577bfe82265&#34;&gt;Skipping until the end of ls&lt;/h2&gt;
+
+&lt;p&gt;There&amp;rsquo;s a lot that happens in &lt;code&gt;ls&lt;/code&gt; and the functions it calls. We are
+going to skip all that by going to the very last line of the C code in
+the ls function
+(&lt;a href=&#34;https://github.com/oskarth/xv6/blob/master/ls.c&#34;&gt;code&lt;/a&gt;), line 71. We
+do this with the GDB command &lt;code&gt;until 71&lt;/code&gt;. When we are at the end of
+&lt;code&gt;ls&lt;/code&gt;, what&amp;rsquo;s about to happen now and what does the stack look like?&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(gdb) x /6i $eip
+=&amp;gt; 0x2f9 &amp;lt;ls+585&amp;gt;:      add    $0x25c,%esp
+   0x2ff &amp;lt;ls+591&amp;gt;:      pop    %ebx
+   0x300 &amp;lt;ls+592&amp;gt;:      pop    %esi
+   0x301 &amp;lt;ls+593&amp;gt;:      pop    %edi
+   0x302 &amp;lt;ls+594&amp;gt;:      pop    %ebp
+   0x303 &amp;lt;ls+595&amp;gt;:      ret
+(gdb) x /4x $esp
+0x2d50: 0x00000003      0x00002d88      0x00000010      0x00000001
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;We don&amp;rsquo;t know what those things on the stack are, but presumably they
+come from something ls did - in fact, we would have to run &lt;code&gt;x /170x
+$esp&lt;/code&gt; to begin to see addresses that we recognize on our stack. That&amp;rsquo;s
+okay though, we are about the clean that stack up with the function
+epilogue. Essentially the five first instructions are the opposite of
+subtracting and pushing things onto the stack. If we step through them
+with &lt;code&gt;stepi 5&lt;/code&gt; we get:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(gdb) x /4x $esp
+0x2fbc: 0x0000031f      0x00000b5f      0x00000000      0x00000000
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Before we did that our stack pointer was set to &lt;code&gt;0x2d50&lt;/code&gt;, and now it&amp;rsquo;s
+back to &lt;code&gt;0x2fbc&lt;/code&gt;. As a sanity check on what&amp;rsquo;s going on, we can see
+that everything seems OK: we just cleaned up 620 bytes, of which the
+first &lt;code&gt;add $0x25c, %esp&lt;/code&gt; took care of 604. &lt;code&gt;pop&lt;/code&gt; was called four
+times, and 4 times 4 bytes (the size of each register that we popped)
+is 16, which takes care of the rest.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;print  0x2fbc - 0x2d50
+$3 = 620
+print 0x25c
+$4 = 604
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Our stack pointer is now back at &lt;code&gt;0x2fbc&lt;/code&gt;, which is where it was at
+the very beginning of the &lt;code&gt;ls&lt;/code&gt; function. The next instruction is a
+simple &lt;code&gt;ret&lt;/code&gt;. What does &lt;code&gt;ret&lt;/code&gt; do? It&amp;rsquo;s the opposite of &lt;code&gt;call&lt;/code&gt;: it pops
+off an address, and jumps to it. So without single stepping, we should
+expect it to jump to &lt;code&gt;0x31f&lt;/code&gt; and set the stack pointer to &lt;code&gt;0x2fbc + 4&lt;/code&gt;
+= &lt;code&gt;0x2fc0&lt;/code&gt;. What is &lt;code&gt;0x31f&lt;/code&gt; again? It&amp;rsquo;s the next line in &lt;code&gt;main&lt;/code&gt; after
+calling &lt;code&gt;ls&lt;/code&gt;. After single stepping it:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;x /4x $esp
+0x2fc0: 0x00000b5f      0x00000000      0x00000000      0x00000000
+x /4i $eip
+=&amp;gt; 0x31f &amp;lt;main+27&amp;gt;:     call   0x5cb &amp;lt;exit&amp;gt;
+   0x324 &amp;lt;main+32&amp;gt;:     movl   $0x1,0x1c(%esp)
+   0x32c &amp;lt;main+40&amp;gt;:     jmp    0x34d &amp;lt;main+73&amp;gt;
+   0x32e &amp;lt;main+42&amp;gt;:     mov    0x1c(%esp),%eax
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Indeed, we are now back in &lt;code&gt;main&lt;/code&gt; and are about to call &lt;code&gt;exit&lt;/code&gt;, and
+our stack is back to the same state it was just before it was about to
+call &lt;code&gt;ls&lt;/code&gt;.&lt;/p&gt;
+
+&lt;h2 id=&#34;stack-traces:6ae9618849cb95f299eb0577bfe82265&#34;&gt;Stack traces&lt;/h2&gt;
+
+&lt;p&gt;When you program in a high-level language you might come across &lt;em&gt;stack
+traces&lt;/em&gt; that show who called a function and with which arguments. GDB
+also has support for this, and if we were executing in the middle of
+the &lt;code&gt;ls&lt;/code&gt; function we could see the following:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;(gdb) info stack
+#0  ls (path=path@entry=0xb5f &amp;quot;.&amp;quot;) at ls.c:33
+#1  0x0000031f in main (argc=1, argv=0x2ff4) at ls.c:79
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Here we have two &lt;em&gt;stack frames&lt;/em&gt;. A stack frame is created at every
+function invocation and contains arguments to the function, its return
+address, and space for local variables.&lt;/p&gt;
+
+&lt;p&gt;In this case we are in stack frame #0 (the inner frame), executing
+instructions in &lt;code&gt;ls&lt;/code&gt;, and we came from main. Notice that the base
+pointer we talked about earlier, &lt;code&gt;0x31f&lt;/code&gt;, is there as the start of the
+other stack frame (the outer frame).&lt;/p&gt;
+
+&lt;p&gt;You can see a stack trace just shows you all the stack frames, which
+we have meticulously (our rather, our compile has) constructed at the
+lower level. There&amp;rsquo;s no magic.&lt;/p&gt;
+
+&lt;h2 id=&#34;conclusion-and-demo:6ae9618849cb95f299eb0577bfe82265&#34;&gt;Conclusion and demo&lt;/h2&gt;
+
+&lt;p&gt;We started off looking at a simple piece of C code and its equivalent
+assembly code. We then inspected the stack before a single instruction
+had been executed, and we then carefully went through the first few
+instructions in that function to see how the stack frame was set
+up. Then we saw how another function, ls, was called and how that
+changed the stack, preserving the stack state of the calling
+function. We then skipped a whole bunch of code only to catch our
+stack being cleaned up, and finally getting returned to the main
+function again with its stack frame intact.&lt;/p&gt;
+
+&lt;p&gt;Here&amp;rsquo;s the video that was promised. In it we trace a system call from
+user space to kernel space and back.&lt;/p&gt;
+
+&lt;div style = &#34;text-align:center&#34;&gt;
+&lt;iframe width=&#34;560&#34; height=&#34;315&#34; src=&#34;https://www.youtube.com/embed/TWksEdn5eoA&#34; frameborder=&#34;0&#34; allowfullscreen&gt;&lt;/iframe&gt;&lt;/div&gt;
+</description>
+    </item>
     
     <item>
       <title>What is a shell and how does it work?</title>
@@ -28,7 +518,7 @@ knowledge. Throughout the text I&amp;rsquo;ve deliberately italicized the first 
 terms that can be seen as domain-specific. In cases where I think an elaboration
 seems necessary, I&amp;rsquo;ve included either a short in-line explanation or a footnote.
 Does this type of explanation - being explicit about the words you use - help
-with understanding, or is the italicization just getting in the way of reading.&lt;/p&gt;
+with understanding, or is the italicization just getting in the way of reading?&lt;/p&gt;
 
 &lt;p&gt;In general, any explanation that is clear and concise is good. This type of
 explanation tries to err more on the side of clarity, rather than conciseness. &lt;sup class=&#34;footnote-ref&#34; id=&#34;fnref:f09b8128b2cd6dc70217eeb5f2ae4fb1:1&#34;&gt;&lt;a rel=&#34;footnote&#34; href=&#34;#fn:f09b8128b2cd6dc70217eeb5f2ae4fb1:1&#34;&gt;1&lt;/a&gt;&lt;/sup&gt;&lt;/p&gt;
