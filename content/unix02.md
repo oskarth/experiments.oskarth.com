@@ -51,10 +51,10 @@ main(int argc, char *argv[])
 }
 ```
 
-This is the main entry point of `ls`. `argc` stands for *argument
-count*, and if main doesn't get a second argument (`ls` counts as the
-first argument to main) it will call the function `ls` with the
-argument `.`. After that it will call the `exit` function.
+This is the main entry point of the `ls` program. `argc` stands for
+*argument count*, and if main doesn't get a second argument (`ls`
+counts as the first argument to main) it will call the function `ls`
+with the argument `.`. After that it will call the `exit` function.
 
 We can get the assembly code for our main function with the
 `disassemble` command in *GDB*. GDB is a debugger that allows us to
@@ -231,9 +231,10 @@ guardrails here - GDB doesn't care if you read memory that represents,
 say, a number as an instruction.
 
 `$eip` is a register that's called an *(extended) instruction
-pointer*. This tells us where we are executing right now. These four
-instructions are called the *function prologue*. What does the stack
-look like after we perform these instructions?
+pointer*. This points to the next instruction we are about to
+execute. These four instructions are called the *function
+prologue*. What does the stack look like after we perform these
+instructions?
 
 Let's do it one by one using GDB's `stepi` function. After `push %ebp`
 this is the stack:
@@ -326,10 +327,11 @@ movl   $0xb5f,(%esp)
 which puts 0xb5f on the stack without changing the stack pointer (good
 thing we made room for local variables before so we didn't overwrite
 our stack!) What is that? Just like was done to `main` in the very
-beginning, before we call the `ls` (the function, not the program) we
-push the argument on the stack. We know there's only one argument and
-that it should be a string, and we can see the true nature of it by
-casting it to a char*:
+beginning, before we call `ls` (the function, not the program -
+henceforth we will just talk about the function `ls` inside the `ls`
+program) we push the argument on the stack. We know there's only one
+argument and that it should be a string, and we can see the true
+nature of it by casting it to a char*:
 
 ```
 print (char*)0xb5f
@@ -340,10 +342,11 @@ $2 = 0xb5f "."
 
 The next instruction is `call 0xb0 <ls>`. `call` does two things, it
 pushes the address of the next instruction in `main` onto the stack,
-and then it jumps to a subprogram (which is just another address in
+and then it *jumps* to a subprogram (which is just another address in
 memory, but since our program was compiled with debug information on
-we can see that it says `<ls>`). After executing that instruction our
-stack and our upcoming four instructions to execute looks like this:
+we can see that it says `<ls>`). A jump changes the instruction
+pointer to its argument. After executing that instruction our stack
+and our upcoming four instructions to execute looks like this:
 
 ```
 (gdb) x /4x $esp
@@ -397,9 +400,9 @@ easy access to that state for when we want to go back to it.
 
 There's a lot that happens in `ls` and the functions it calls. We are
 going to skip all that by going to the very last line of the C code in
-the ls function, line 71. We do this with the GDB command `until
-71`. When we are at the end of `ls`, what's about to happen now and
-what does the stack look like?
+the ls function (TODO: reference code), line 71. We do this with the
+GDB command `until 71`. When we are at the end of `ls`, what's about
+to happen now and what does the stack look like?
 
 ```
 (gdb) x /6i $eip
@@ -440,13 +443,13 @@ print 0x25c
 $4 = 604
 ```
 
-Our stack pointer is now back at `02fbc`, which was what our stack
-looked like at the very beginning of the `ls` function, and the next
-instruction is a simple `ret`. What does `ret` do? It's the opposite
-of `call`: it pops off an address, and jumps to it. So without single
-stepping, we should expect it to jump to `0x0000031f` and set the
-stack pointer to `0x2fbc - 4` = `0x2fb8`. What is `0x31f` again? It's
-the next line in `main` after calling `ls`. Let's single step it:
+Our stack pointer is now back at `0x2fbc`, which is where it was at
+the very beginning of the `ls` function. The next instruction is a
+simple `ret`. What does `ret` do? It's the opposite of `call`: it pops
+off an address, and jumps to it. So without single stepping, we should
+expect it to jump to `0x31f` and set the stack pointer to `0x2fbc + 4`
+= `0x2fc0`. What is `0x31f` again? It's the next line in `main` after
+calling `ls`. After single stepping it:
 
 ```
 x /4x $esp
@@ -462,6 +465,8 @@ Indeed, we are now back in `main` and are about to call `exit`, and
 our stack is back to the same state it was just before it was about to
 call `ls`.
 
+## Stack traces
+
 When you program in a high-level language you might come across *stack
 traces* that show who called a function and with which arguments. GDB
 also has support for this, and if we were executing in the middle of
@@ -473,14 +478,18 @@ the `ls` function we could see the following:
 #1  0x0000031f in main (argc=1, argv=0x2ff4) at ls.c:79
 ```
 
-This tells us that we are in stack frame #0 (the inner frame),
-executing instructions in `ls`, and we came from main. Notice that the
-base pointer we talked about earlier, `0x31f`, is there as the start
-of the other stack frame (the outer frame). Now you hopefully have at
-least some idea of where these stack frames come from.
+Here we have two *stack frames*. A stack frame is created at every
+function invocation and contains arguments to the function, its return
+address, and space for local variables.
 
-We will see some neat usages of this, jumping between stack frames to
-see what's going on, and other features in the video below.
+In this case we are in stack frame #0 (the inner frame), executing
+instructions in `ls`, and we came from main. Notice that the base
+pointer we talked about earlier, `0x31f`, is there as the start of the
+other stack frame (the outer frame).
+
+You can see a stack trace just shows you all the stack frames, which
+we have meticulously (our rather, our compile has) constructed at the
+lower level. There's no magic.
 
 ## Conclusion and demo
 
@@ -494,9 +503,8 @@ function. We then skipped a whole bunch of code only to catch our
 stack being cleaned up, and finally getting returned to the main
 function again with its stack frame intact.
 
-I hope this was useful and that you learned something. Here's the
-video that was promised. In it we trace a system call from user space
-to kernel space [^1] and back.
+Here's the video that was promised. In it we trace a system call from
+user space to kernel space [^1] and back.
 
 <div style = "text-align:center"> <iframe width="560" height="315"
 src="https://www.youtube.com/embed/ZGprFv75YOc" frameborder="0"
