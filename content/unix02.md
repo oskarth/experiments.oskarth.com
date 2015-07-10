@@ -6,9 +6,9 @@ title = "What's on the stack?"
 +++
 
 This is the third post in my series on Grokking xv6. We will use GDB
-to understanding how the stack works. At the end of the post there's a
-video where we trace a system call from user space to kernel space and
-back.
+to understanding how the stack works in detail. At the end of the post
+there's a video where we trace a system call from user space to kernel
+space and back.
 
 <!--more-->
 
@@ -21,9 +21,10 @@ what we want to do. There are a lot of guides out there that present a
 fluffy view of reality, but I want to stay as faithful as possible to
 what you would actually see using GDB and a real code base.
 
-One of the hardest parts so far going through xv6 was not having a
-good mental model of the *stack* and how it operates, I will attempt to
-communicate at least a part of this to you.
+One of the hardest parts so far
+[going through xv6](http://experiments.oskarth.com/unix00/) was not having a
+good mental model of the *stack* and how it operates, I will attempt
+to communicate at least a part of this to you.
 
 ## Code
 
@@ -400,9 +401,10 @@ easy access to that state for when we want to go back to it.
 
 There's a lot that happens in `ls` and the functions it calls. We are
 going to skip all that by going to the very last line of the C code in
-the ls function (TODO: reference code), line 71. We do this with the
-GDB command `until 71`. When we are at the end of `ls`, what's about
-to happen now and what does the stack look like?
+the ls function
+([code](https://github.com/oskarth/xv6/blob/master/ls.c)), line 71. We
+do this with the GDB command `until 71`. When we are at the end of
+`ls`, what's about to happen now and what does the stack look like?
 
 ```
 (gdb) x /6i $eip
@@ -504,10 +506,8 @@ stack being cleaned up, and finally getting returned to the main
 function again with its stack frame intact.
 
 Here's the video that was promised. In it we trace a system call from
-user space to kernel space [^1] and back.
+user space to kernel space and back.
 
 <div style = "text-align:center"> <iframe width="560" height="315"
-src="https://www.youtube.com/embed/ZGprFv75YOc" frameborder="0"
+src="https://www.youtube.com/embed/O5bLJKMLIG4" frameborder="0"
 allowfullscreen></iframe></div>
-
-[^1]: We switch to kernel space when addresses begin with `0x8...`.
