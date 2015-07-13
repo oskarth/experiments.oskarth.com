@@ -1,12 +1,11 @@
 +++
-date = "2015-07-07T19:52:26+02:00"
-draft = true
+date = "2015-07-10T18:00:00+02:00"
 title = "What's on the stack?"
 
 +++
 
 This is the third post in my series on Grokking xv6. We will use GDB
-to understanding how the stack works in detail. At the end of the post
+to understand how the stack works in detail. At the end of the post
 there's a video where we trace a system call from user space to kernel
 space and back.
 
