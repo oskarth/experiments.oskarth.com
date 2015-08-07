@@ -149,13 +149,15 @@ their process id we can *pipe* the result of running ps to the program *sort*.
 
     ps | sort
 
-When the shell parses this command it sees the symbol "|" and knows it's a pipe
-command. A pipe command has two sides: a left and a right side. When we write on
-the left side we can read from right side. A pipe is a small *buffer* [^6] that
-lives in kernel space and allows processes to talk to each other, which is
-called *inter-process communication*. This communication happens continuously as
-new data is written to the pipe. It's also a *queue*, so even if new data comes
-in faster than you can process it in the right process the data doesn't
+When the shell parses this command it sees the symbol "|" and knows
+it's a pipe command. A pipe command has two sides: a left and a right
+side. When the program on the left side writes to STDOUT it can be
+read from the program on the right side through STDIN. A pipe is a
+small *buffer* [^6] that lives in kernel space and allows processes to
+talk to each other, which is called *inter-process
+communication*. This communication happens continuously as new data is
+written to the pipe. It's also a *queue*, so even if new data comes in
+faster than you can process it in the right process the data doesn't
 disappear, and it doesn't *block* [^7] either.
 
 How does this work? Let's look at the code.
