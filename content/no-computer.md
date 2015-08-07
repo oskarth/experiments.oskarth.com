@@ -9,6 +9,7 @@ opportunity to do an experiment in being offline.
 
 <!--more-->
 
+## Bracketing
 There's a concept called *bracketing a problem*. The idea is that in a
 world of uncertainty, we will get more knowledge by asking "what would
 be too little?" and "what would be too much?" than by simply asking
@@ -125,7 +126,7 @@ secretly wish they could sneak away from the computer and just be away
 for a while.
 
 Maybe not being connected all the time will develop into a form of
-luxury? Instead of asking when the last time someone travelled or took
+luxury. Instead of asking when the last time someone travelled or took
 a vacation, the question we will ask in the future is: when was the
 last time you spent a week offline?
 
