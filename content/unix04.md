@@ -89,7 +89,7 @@ entries in parallel.
 **Problem for the author**: In a lecture Robert Morris seems to say
   there are problems with not locking the getting part too. I don't
   see how. Did I misunderstand what he was saying or is there an
-  insight I'm missing?
+  insight I'm missing? See note at the end for an answer.
 
 This is what is called a *coarse-grained* lock. We can do
 *fine-grained* locks to increase performance, at the cost of making
@@ -185,3 +185,13 @@ Semaphores* by Downey, which is available for free online.
 (If you liked this, you might enjoy
 [Grokking xv6](http://experiments.oskarth.com/unix00/). To stay up to
 date on my experiments, consider [subscribing](http://eepurl.com/bvtdfj).)
+
+*NOTE: Kamal Marhubi pointed out RTM seems to be saying three things:
+  (1) In this program, all gets happen after all puts so it's
+  definitely not an issue. (2) There's a problem with get operations
+  in the general case, because we could get an entry in a
+  non-consistent state (3) In this specific implementation it's not a
+  problem, because the pointer to the newly-created entry is changed
+  atomically, so the worst we can do is get a stale item. Regardless,
+  these things are tricky and it's probably better to lock the get
+  operations as well to avoid subtle bugs.*
