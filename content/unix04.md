@@ -1,6 +1,6 @@
 +++
 date = "2015-08-07T17:00:00+02:00"
-title = "Locks and synchronization"
+title = "Locks and concurrency"
 +++
 
 This is the fifth post in my series on Grokking xv6. We look at

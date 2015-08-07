@@ -133,3 +133,8 @@ last time you spent a week offline?
 [^1]: One of the earliest references to this idea is Aristotle's golden mean.
 
 **Thanks** to Margo Kulkarni for reading drafts of this post.
+
+(If you liked this, you might enjoy
+[The Watsi Experiment](http://experiments.oskarth.com/watsi-experiment/). To
+stay up to date on my experiments, consider
+[subscribing](http://eepurl.com/bvtdfj).)

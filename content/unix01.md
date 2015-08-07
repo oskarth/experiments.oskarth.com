@@ -231,7 +231,12 @@ don't hesitate to [email](mailto:me@oskarth.com) or
 [tweet](https://twitter.com/oskarth) me.
 
 **Thanks** to Mark Dominus, Allison Kaptur, Margo Kulkarni, and Kamal
-  Marhubi for reading drafts of this post.
+Marhubi for reading drafts of this post.
+
+(If you liked this, you might enjoy
+[What's on the stack?](http://experiments.oskarth.com/unix02/). To
+stay up to date on my experiments, consider
+[subscribing](http://eepurl.com/bvtdfj).)
 
 ## Resources
 

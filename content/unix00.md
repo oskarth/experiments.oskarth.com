@@ -86,3 +86,8 @@ read my daily code journal. The latest entry can be found by typing `curl -L
 plan.oskarth.com` into your terminal. If you want to see previous entries you
 can find them at `curl plan.oskarth.com/list`. All the code is available on
 [Github](https://github.com/oskarth/xv6).
+
+(If you liked this, you might enjoy
+[What is a shell and how does it work?](http://experiments.oskarth.com/unix01/). To
+stay up to date on my experiments, consider
+[subscribing](http://eepurl.com/bvtdfj).)
