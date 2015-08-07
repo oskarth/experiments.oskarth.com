@@ -230,6 +230,9 @@ homework in MIT's operating systems class. If you have any comments, please
 don't hesitate to [email](mailto:me@oskarth.com) or
 [tweet](https://twitter.com/oskarth) me.
 
+**Thanks** to Mark Dominus, Allison Kaptur, Margo Kulkarni, and Kamal
+  Marhubi for reading drafts of this post.
+
 ## Resources
 
 - xv6 shell code: https://github.com/oskarth/xv6/blob/master/homework/sh.c
