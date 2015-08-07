@@ -9,7 +9,7 @@ finally we look at how locks are implemented in xv6.
 
 <!--more-->
 
-The most straightforward mental model of how code executes, you
+In the most straightforward mental model of how code executes, you
 probably think of lines of code as executing one after another,
 serially. This is correct for single-processor CPUs, but as soon as
 you have multiple cores this assumption is no longer true.
@@ -185,4 +185,3 @@ Semaphores* by Downey, which is available for free online.
 (If you liked this, you might enjoy
 [Grokking xv6](http://experiments.oskarth.com/unix00/). To stay up to
 date on my experiments, consider [subscribing](http://eepurl.com/bvtdfj).)
-
