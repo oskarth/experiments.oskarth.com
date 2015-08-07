@@ -1,0 +1,14 @@
+- deploy and dev script
+- look into just rsyncing public folder and use nginx directly
+
+- Add acks (allsion, mark dominus, margo, see more)
+- Add subscribe
+- Add read this rec
+- Add discuss on HN?
+- Add family of posts
+
+Ideas for experiments:
+
+what exactly is it, mby more subst than X
+
+- Profiling - how to measure, figuring out if program is CPU/Mem/IO bound.
