@@ -3,18 +3,18 @@
     <div class="sidebar-about">
       <a href="{{ .Site.BaseUrl }}"> <h1>{{ .Site.Title }}</h1> </a>
       <p class="lead">
-      Experimental journal.
+      Experiments journal.
       </p>
       <p><a href="http://twitter.com/oskarth">@oskarth</a></p>
-      <!--<p><a href="http://twitter.com/oskarth">Subscribe</a></p>-->
     </div>
 
     <ul class="sidebar-nav">
       <!--<li><a href="/">Home</a> </li>-->
       {{ range .Site.Menus.main }}
-        <li><a href="{{.Url}}"> {{ .Name }} </a></li>
+      <li><a href="{{.Url}}"> {{ .Name }} </a></li>
       {{end}}
     </ul>
-    <p>{{ with .Site.Params.Copyright }}{{.}}{{ else }}&copy; {{.Now.Format "2006"}} Oskar Thorén {{end}}</p>
+    <p>{{ with .Site.Params.Copyright }}{{.}}{{ else }}&copy; {{.Now.Format "2006"}}     <a href="http://www.oskarth.com/">Oskar Thorén</a>
+      {{end}}</p>
   </div>
 </div>
