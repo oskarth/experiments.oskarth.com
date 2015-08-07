@@ -66,7 +66,7 @@ structure that works as follows. A virtual address, such as
 into the following three parts:
 
 ```
-  10      10       12
+    10      10       12
   | Dir | Table | Offset |
 ```
 
@@ -107,17 +107,17 @@ error handling:
 
 
 ```
-  if(tf->trapno == T_SYSCALL) {
-     // code to deal with a system call in kernel space
+if(tf->trapno == T_SYSCALL) {
+   // code to deal with a system call in kernel space
+}
+if(tf->trapno == T_PGFLT) {
+  uint a = PGROUNDDOWN(rcr2()); // round down faulty VA to page start
+  char *mem;
+  mem = kalloc();
+  memset(mem, 0, PGSIZE);
+  mappages(proc->pgdir, (char*)a, PGSIZE, v2p(mem), PTE_W|PTE_U);
+  return;
   }
-  if(tf->trapno == T_PGFLT) {
-    uint a = PGROUNDDOWN(rcr2()); // round down faulting VA to page boundary
-    char *mem;
-    mem = kalloc();
-    memset(mem, 0, PGSIZE);
-    mappages(proc->pgdir, (char*)a, PGSIZE, v2p(mem), PTE_W|PTE_U);
-    return;
-    }
 ```
 
 When we get notified of a page fault, we take the faulting address and
