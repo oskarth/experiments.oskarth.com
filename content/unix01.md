@@ -230,8 +230,8 @@ homework in MIT's operating systems class. If you have any comments, please
 don't hesitate to [email](mailto:me@oskarth.com) or
 [tweet](https://twitter.com/oskarth) me.
 
-**Thanks** to Mark Dominus, Margo Kulkarni, Kamal Marhubi and a few
-other anonymous people for reading drafts of this post.
+**Thanks** to Mark Dominus, Margo Kulkarni, and Kamal Marhubi for
+  reading drafts of this post.
 
 (If you liked this, you might enjoy
 [What's on the stack?](http://experiments.oskarth.com/unix02/). To
