@@ -186,8 +186,8 @@ Semaphores* by Downey, which is available for free online.
 [Grokking xv6](http://experiments.oskarth.com/unix00/). To stay up to
 date on my experiments, consider [subscribing](http://eepurl.com/bvtdfj).)
 
-*NOTE: Kamal Marhubi pointed out RTM seems to be saying three things:
-  (1) In this program, all gets happen after all puts so it's
+*NOTE: Kamal Marhubi pointed out that rtm seems to be saying three
+  things: (1) In this program, all gets happen after all puts so it's
   definitely not an issue. (2) There's a problem with get operations
   in the general case, because we could get an entry in a
   non-consistent state (3) In this specific implementation it's not a
