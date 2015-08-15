@@ -1,161 +1,202 @@
 +++
-date = "2015-08-06T20:24:36+02:00"
-draft = true
-title = "GROK LOC?"
-
+date = "2015-08-15T17:00:00+02:00"
+title = "A short overview of the file system"
 +++
 
-> (repeatedly 20 #(rand-int 10000))
+This is the sixth post in my series on Grokking xv6. In this post we
+will give a very brief overview of the xv6 file system, with special
+focus on the buffer cache layer.
 
-Rules: no empty lines or lines that {} or comments etc
+<!--more-->
 
-Few Q: Would you write this line yourself? Do you understand why it is
-there?
+A file system is used to store and access data. That data is stored on
+a *hardware disk*. A hardware disk is divided into 512-byte *blocks*
+or *sectors*. The first one is the *boot sector*, which contains the
+code necessary to boot up the operating system. After that comes the
+*super block*, which contains information about the rest of the
+blocks.
 
-As a rule, comments (ie no influence code) and lines you'd find in
-other code bases, like "static int"
+```
+| boot | super | inodes... | bit map... | data... | log... |
+   0       1        2...
+```
 
-Also, immediately. Not after thinking a lot and doing a lot of
-googling. INSTA.
+Here's what superblock looks like:
 
-Alt can provide context, paragraph. Wordy though.
+```
+struct superblock {
+  uint size;         // Size of file system image (blocks)
+  uint nblocks;      // Number of data blocks
+  uint ninodes;      // Number of inodes
+  uint nlog;         // Number of log blocks
+};
+```
 
-20 RANDOMS, #1
-13 n/a - more than half!!!
+Thus the specific boundaries for the *inodes*, *bit map*, *data* and
+*log* blocks, respectively, can be inferred from looking at the super
+block. What purpose these blocks serve will be explained as it is
+necessary, but for now it's enough to have a coarse mental model of
+how the file system is laid out.
 
-<pre>
-Aug 6 2015
+## Tower of abstractions
 
-1
-0354 int pipewrite(struct pipe*, char*, int);
-CONTEXT: defs.h: declarations for pipe.c
-COMMENT: Pipe interface declaration to write to a pipe.
-VERDICT: YES
+File systems do a lot of things: they provide persistence, recovery
+from crashes, caching for increased performance, and coordination for
+concurrent access. Thus they can be quite complex. One good way of
+dealing with complexity is through abstraction in multiple layers. We
+don't want the the code dealing with file descriptors to deal with
+specifics of a certain disk driver, for example. Here's an
+illustration of the different layers, from the top layer to the bottom
+layer:
 
-2
-3093 acquire(&kmem.lock);
-CONTEXT: kalloc.c: kalloc function
-COMMENT: Get lock so we don't get lost update in memory's free list.
-VERDICT: YES
+```
+File descriptor
+Pathname
+Directory
+Inode
+Logging
+Buffer cache
+Disk
+```
 
-3
-4256 struct buf **pp;
-CONTEXT: ide.c: iderw function
-COMMENT: Temp buffer for disk sync, don't know why ** and purpose.
-VERDICT: NO
+From the file system's point of view, the data lives on some disk
+somewhere. The file system communicates with this disk via a *device
+driver*. Since there are many different types of *devices* (disks,
+graphic cards, keyboard, monitors, etc), for a real operating system
+we need a lot of device drivers. Frequently these device drivers take
+up the majority of an operating system's code base, measured in lines
+of code.
 
-4
-5525 if((next = dirlookup(ip, name, 0)) == 0){
-CONTEXT: fs.c: namex function
-COMMENT: Haven't studied the file system yet. (Aug 6)
-VERDICT: NO
+We will now go through one layer, the *buffer cache*, in more detail,
+and then briefly touch on the other layers. The general purpose of
+most layers is the same - to abstract away implementation details and
+provide an interface for the layers above.
 
-5
-6144 f−>off = 0;
-CONTEXT: sysfile.c: sys_open function
-COMMENT: Don't know what off is or why we set it to 0. See above.
-VERDICT: NO
+## Buffer cache
 
-6
-6638 if(s < d && s + n > d){
-CONTEXT: string.c: memmove function
-COMMENT: Don't know immediately. Making sure we move memory correctly.
-VERDICT: NO
+One layer up from the disk we have the *buffer cache*, which consists
+of a list of recently used *buffers*. A buffer provides an *in-memory*
+copy of a specific disk sector. There are two main things you can do
+with a buffer: read and write to it. A buffer can be in one of three
+states: busy, valid and dirty. If a buffer is dirty it means it has
+been changed and needs to be written to disk, if it's valid it has
+been read from disk, and if it's busy it means a process is using the
+buffer right now. Once you are done with a buffer you have to release
+it so other processes can use it.
 
-7
-8331 exit();
-CONTEXT: init.c: main function, when pid == 0
-COMMENT: Path only reached when exec of ls fails, exits init process.
-VERDICT: YES
+Often we access the same piece of data multiple times, and reading
+from disk every time would be very slow. The buffer cache solves this
+problem with an *LRU cache* (least-recently used), implemented as a
+*doubly-linked list* in xv6. More efficient caching mechanisms exist
+and are frequently used in real operating systems, at the cost of
+implementation complexity. Here's what a buffer and the buffer cache
+look like in xv6:
 
-8
-0361 int growproc(int);
-CONTEXT: defs.h: proc.c declarations
-COMMENT: Declaration for process API to grow a process's memory.
-VERDICT: YES
+```
+struct buf {
+  int flags;         // B_BUSY, B_VALID, B_DIRTY
+  uint dev;          // device number
+  uint blockno;      // block number
+  struct buf *prev;  // LRU cache list
+  struct buf *next;
+  struct buf *qnext; // disk queue
+  uchar data[BSIZE]; // actual data, 512 bytes
+};
+#define B_BUSY  0x1  // buffer is locked by some process
+#define B_VALID 0x2  // buffer has been read from disk
+#define B_DIRTY 0x4  // buffer needs to be written to disk
 
-9
-0668 #define STA_W 0x2 // Writeable (non−executable segments)
-CONTEXT: asm.h: magic constants.
-COMMENT: I don't know. Some segment type bit for x86.
-VERDICT: NO
+struct {
+  struct spinlock lock; // lock to synchronize access
+  struct buf buf[NBUF]; // array of buffers
+  struct buf head;      // most recently used buffer
+} bcache;
+```
 
-10
-1912 memmove(mem, init, sz);
-CONTEXT: vm.c: inituvm function
-COMMENT: Move memory char* in init to the allocated mem-location mem.
-VERDICT: YES
+This means that `bcache->head` points to the most recently used
+buffer, and so on. If we haven't used the data located in a specific
+disk sector recently, the corresponding buffer is not in our cache
+anymore. We thus have to read the data from disk.
 
-11
-5078 if(ip−>type == 0)
-CONTEXT: fs.c: ilock function
-COMMENT: Can't lock inode, unexpected that inode has no type.
-VERDICT: YES
+By caching recently used pieces of data, the buffer layer
+significantly increases the speed of reading and writing data. It also
+allows multiple processes to get the data they want without
+accidentally disrupting each other.
 
-12
-5523 return ip;
-CONTEXT: fs.c: namex function
-COMMENT: Found inode for a path name and returns it.
-VERDICT: YES
+## Other layers
 
-13
-5613 struct spinlock lock;
-CONTEXT: file.c: in struct ftable
-COMMENT: A lock for accessing file table.
-VERDICT: YES
+The *logging layer* wraps multiple system calls' writes and reads into
+one *transaction* and then does a so called *group commit*. This
+ensures that the file system is always in a consistent state, so if
+our computer crashes in the middle of writing a file it either writes
+it or it doesn't - in other words it is *atomic*. It does this by
+storing the writes of a transaction in intermediate *log blocks*. Only
+when all system calls of a transaction have been logged are the writes
+committed to their respective blocks. If the computer crashes, a
+recovery function is run that checks if all writes were logged or
+not. If they were, all writes are replayed, and if they were not, no
+writes are performed.
 
-14
-0273 int exec(char*, char**);
-CONTEXT: defs.h: declarations for exec
-COMMENT: For executing procs, takes a path and pointer to argv string.
-VERDICT: YES
+The *inode layer* gives us files without names, and keeps track of
+where the file's content is stored on disk. Any given file can have
+multiple names, but it's always one inode underneath. We identify
+inodes by their inode number. If all references to an inode are gone,
+we delete the inode. Similarly to how buffers correspond to blocks on
+disk, inodes have an in-memory representation as well as an on-disk
+representation. For performance reasons, we want to deal with the
+in-memory version as much as possible.
 
-15
-0531 pd[1] = (uint)p;
-CONTEXT: x86.h: lidt function
-COMMENT: I don't know, used for some inline assembly lidt.
-VERDICT: NO
+A file's content is stored in *data blocks*. The *bit map blocks*
+tells us which of the data blocks are available to store data in, a
+process which is called *block allocation*.
 
-16
-0709 #define FL_TF 0x00000100 // Trap Flag
-CONTEXT: mmu.h: eflags register magic constants.
-COMMENT: I don't know. Constant to signify if it's a trap to x86?
-VERDICT: NO
+The *directory layer* gives us support for directories. A directory
+consists of multiple *directory entries*, each having an inum, which
+is its inode number, and a name. When we look up a directory we
+iterate over its inode's data, which consists of directory entries
+laid out contiguously. Here's a directory entry:
 
-17
-3403 cprintf("unexpected trap %d from cpu %d eip %x (cr2=0x%x)\n",
-CONTEXT: trap.c: trap switch statement, default case
-COMMENT: Got an unknown trap from kernel space, prints debug info.
-VERDICT: YES
+```
+struct dirent {
+  ushort inum;
+  char name[DIRSIZ];
+};
+```
 
-18
-6240 if(uarg == 0){
-CONTEXT: sysfile.c: sys_exec function
-COMMENT: If current, temp, arg is 0 we can pad argv to zero.
-VERDICT: YES
+The *path layer* gives us support for looking up a path like
+`/usr/bin/emacs` in the file system. It does this by successively
+looking up directory entries. For relative paths, *current working
+directory* is a property of the process where the system call is made
+from.
 
-19
-7482 if(irqmask != 0xFFFF)
-CONTEXT: picirq.c: picinit function
-COMMENT: Something about interrupt controller missing a bit mask.
-VERDICT: NO
+The *file descriptor* layer gives us support for treating many
+different things as files - standard streams, devices, pipes, and real
+files - uniformly. This is the implementation of the interface we used
+back in the second installment of this series, *What is a shell and
+how does it work?*. There's a global *file table* which keeps track of
+all the file descriptors and what they point to:
 
-20
-7819 for(;;)
-CONTEXT: console.c: panic
-COMMENT: Infinite loop after kernel panic.
-VERDICT: YES
+```
+struct {
+  struct spinlock lock;
+  struct file file[NFILE];
+} ftable;
+```
 
-RESULT: 12/20
-</pre>
+A file here is usually an inode with some additional metadata, such as
+whether it is readable or writable, what type it is, how many
+references to the file there are, etc.
 
+## Conclusion
 
-Really interesting. Keep doing until you have 20.
+We have seen a very short overview of the file system, starting with
+where things are on disk, and then looking at the layers that make up
+the file system.
 
-GROKTESTS.
-~$ rrange 0.95 20
-Around 19 ~ [17, 21]
+This is the last explanatory post in this series. Next week we will
+look at testing the first of the original hypotheses given in
+*Grokking xv6*.
 
-So 17+ is OK.
-
-what does it mean to understand a line of code?
+(If you liked this, you might enjoy
+[Grokking xv6](http://experiments.oskarth.com/unix00/). To stay up to
+date on my experiments, consider [subscribing](http://eepurl.com/bvtdfj).)

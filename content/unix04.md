@@ -183,8 +183,9 @@ programming point of view, I highly recommend *The Little Book of
 Semaphores* by Downey, which is available for free online.
 
 (If you liked this, you might enjoy
-[Grokking xv6](http://experiments.oskarth.com/unix00/). To stay up to
-date on my experiments, consider [subscribing](http://eepurl.com/bvtdfj).)
+[A short overview of the file system](http://experiments.oskarth.com/unix05/). To
+stay up to date on my experiments, consider
+[subscribing](http://eepurl.com/bvtdfj).)
 
 *NOTE: Kamal Marhubi pointed out that rtm seems to be saying three
   things: (1) In this program, all gets happen after all puts so it's
