@@ -4,8 +4,8 @@ title = "A short overview of the file system"
 +++
 
 This is the sixth post in my series on Grokking xv6. In this post we
-will give a very brief overview of the xv6 file system, with special
-focus on the buffer cache layer.
+will give a brief overview of the xv6 file system, with special focus
+on the buffer cache layer.
 
 <!--more-->
 
