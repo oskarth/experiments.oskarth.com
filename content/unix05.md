@@ -173,8 +173,8 @@ The *file descriptor* layer gives us support for treating many
 different things as files - standard streams, devices, pipes, and real
 files - uniformly. This is the implementation of the interface we used
 back in the second installment of this series, *What is a shell and
-how does it work?*. There's a global *file table* which keeps track of
-all the file descriptors and what they point to:
+how does it work?*. There's a global *ftable* which keeps track of all
+open files:
 
 ```
 struct {
@@ -189,9 +189,9 @@ references to the file there are, etc.
 
 ## Conclusion
 
-We have seen a very short overview of the file system, starting with
-where things are on disk, and then looking at the layers that make up
-the file system.
+We have seen a short overview of the file system, starting with where
+things are on disk, and then looking at the layers that make up the
+file system.
 
 This is the last explanatory post in this series. Next week we will
 look at testing the first of the original hypotheses given in
