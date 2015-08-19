@@ -198,5 +198,5 @@ look at testing the first of the original hypotheses given in
 *Grokking xv6*.
 
 (If you liked this, you might enjoy
-[Grokking xv6](http://experiments.oskarth.com/unix00/). To stay up to
+[Grok LOC?](http://experiments.oskarth.com/unix06/). To stay up to
 date on my experiments, consider [subscribing](http://eepurl.com/bvtdfj).)

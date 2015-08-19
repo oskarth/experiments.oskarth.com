@@ -80,3 +80,8 @@ you to implement your own lisp interpreter!
 might change the posting frequency to every other week, or write about one
 experiment for several weeks in a row. If you have any thoughts on what kind of
 format you think would be interesting to read, please let me know. D.S.*
+
+(If you liked this, you might enjoy
+[How to Follow pmarca on Twitter](http://experiments.oskarth.com/how-to-follow-pmarca/). To
+stay up to date on my experiments, consider
+[subscribing](http://eepurl.com/bvtdfj).)
