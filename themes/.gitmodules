@@ -1,0 +1,6 @@
+[submodule "hyde"]
+	path = hyde
+	url = https://github.com/spf13/hyde.git
+[submodule "hyde-x"]
+	path = hyde
+	url = https://github.com/spf13/hyde-x.git
