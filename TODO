@@ -12,3 +12,11 @@ Ideas for experiments:
 what exactly is it, mby more subst than X
 
 - Profiling - how to measure, figuring out if program is CPU/Mem/IO bound.
+
+
+Idea: restructure into longer pieces with subtopics and follow up notes
+
+eg xv6, general Q discvoer. First not super interesting or is it. Hm, I didn't
+test it comp.
+
+moved on to netpowder.
