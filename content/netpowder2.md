@@ -87,7 +87,7 @@ can make a big difference.
 ## Conclusion
 
 We started off with the general question: *what makes a good interface?* and, in
-the face of uncertainity, we drilled down to a trivial but specific example,
+the face of uncertainty, we drilled down to a trivial but specific example,
 making some very small changes to make a certain user flow suck less.
 
 This might seem like an obvious thing to do - and it is - but all these details
