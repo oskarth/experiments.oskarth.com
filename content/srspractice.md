@@ -1,5 +1,5 @@
 +++
-date = "2016-03-15T17:06:02+02:00"
+date = "2016-03-20T20:00:00+02:00"
 title = "Spaced repetition and practice"
 +++
 
@@ -9,30 +9,56 @@ the minimum amount of effort?
 <!--more-->
 
 The last few months I've been doing a bunch of experiments centered around
-practice and retention. If you are interested in reading all of them, you can
-read them at plan.oskarth.com (entry 18 to 25). In this post I want to focus on
-the last experiment I did, and end with some thoughts on what I think it means.
+practice and retention [^1]. We often learn how to do things and then forget.
+How can we avoid this? One solution is over-learning, which happens naturally
+for things we do a lot. I suspect this is one of the reasons fundamentals are
+often learned better once we do more advanced things. For example, if you grow
+up speaking German pronouns and cases will be ingrained, because you've dealt
+with sentences that depended on them for so long.
 
+What about things that are not naturally over-learned, for whatever reason? Can
+we learn things once and easily maintain that skill?
 
-TODO: Mention something about Ebbinghaus?
+## Spaced repetition background
+
+A *spaced repetition system* (SRS) is a way of efficiently repeating things you
+don't want to forget, usually by using electronic flashcards. A SRS exploits the
+fact that if you remember something well you don't have to repeat it as often.
+Its basis in the literature is called the *forgetting curve* and was discovered
+by Hermann Ebbinghaus through laborious self-experimentation close to 150 years
+ago. The SRS I use is called Anki [^2].
 
 ## Hypothesis
 
-Given that I've *learned* something and added multiple cards to my *spaced
-repetition system* (SRS), I'll be able to:
+Given that I've *learned how to do something* and added multiple cards to my
+*spaced repetition system* (SRS), I'll be able to:
 
 (a) solve the same problem in roughly the same amount of time, regardless of how
-long it's been since I did it the last time (time-invariant).
+long it's been since I did it the last time (a kind of time-invariance).
 
 (b) solve problems I've previously learned to solve twice as fast as if I don't
 use spaced repetition.
 
 ## Methodology
 
-I worked on 10 small problems until I (a) felt like I understood them (b)
-solved them in ~5-10m from scratch. After that, I added a bunch flashcards to a
-spaced repetition program called Anki. I tried a mix of cards that are all
-possible to do in one's head. Examples of types of cards include:
+I precomputed a series of 5 As and 5 Bs in a random order that I'm unaware of
+[^3]. I then worked on 10 small exercises from the book *Eloquent Javascript*
+that I couldn't immediately produce an "optimal" solution for. I did this until
+I:
+
+1. felt like I understood the problem
+2. solved it in ~5-10m from scratch.
+
+This was my criterion for what it means to *learn* something, not unlike what
+Ebbinghaus calls the *first errorless reproduction* in his studies on memory
+[^4].
+
+For each exercise I made a few (2-8) flash cards and added them to my SRS. After
+doing this, I checked the next draw in my random sequence. If I got an A I kept
+the cards, and if I got a B I suspended it (i.e. I won't see it again).
+
+As for the content of the cards, I tried a mix of cards that are all possible to
+do in one's head. Examples of types of cards include:
 
 1. Checks for conceptual understanding
 2. Basic debugging: what's wrong with this piece of quote
@@ -40,48 +66,93 @@ possible to do in one's head. Examples of types of cards include:
 4. Listing exhaustive cases to check for some simple domain
 5. Basic syntax and idioms questions
 
-See the my notebok [http://plan.oskarth.com/22] for more concrete examples.
+See my notebook [^5] for more concrete examples.
+Doing this, I believe I eliminated any bias I have in the effort I put into
+learning each thing, and in making the cards. I believe the effect will be more
+pronounced with time, but I capped the delay from learning to testing to an
+average of three weeks. Each practice test was capped to 20 minutes.
 
-Protocol: I've precomputed a series of 5 As and 5 Bs in a random order that I'm
-unaware of. I'm doing 10 exercises from Eloquent Javascript that I failed to
-produce the "optimal" solution in 5m. For each exercise I make a few flash cards
-and add them to my SRS. After doing that, I check the next draw in my random
-sequence, and if I get an A I keep the cards, and if I get a B I suspend it
-(i.e. I won't see it again).
-
-Doing this, I believe I've eliminated any bias I have in the effort I put into
-learning each thing, and to make the cards themselves. I believe the effect will
-be more pronounced with time, but I'm going to cap the delay from learning to
-testing to an average of two weeks. Each practice test will also be capped to 20
-minutes.
+Notice that the learning is a question of *know-how* whereas the repetition is a
+question of *know-what*. The *know-how* is tested by the actual act of writing
+code, whereas the *know-what* is tested by me judging how well I answered a
+flash card in my head.
 
 ## Result
 
-I tested myself on the 10 problems I previously learned (see 24). Recall
-that I split the problems into two groups, one where I practiced spaced
-repetition (group A) and one where I didn't (group B). On average, it's been
-three weeks since I last solved these problems.
+Group A took 18 minutes in total, and all problems were solved in around 5m.
+Group B took 46m to solve in total. Group B includes one that I didn't solve
+(counted as 20m) and one partial solution that took 11m. I decided to count the
+partial solution as a solution as it was mostly correct.
 
-Results: Group A took 18 minutes in total, and all problems were solved in
-around 5m. Group B took 46m to solve in total. Group B includes one that I
-didn't solve (counted as 20m) and one partial solution that took 11m. I decided
-to count the partial solution as a solution as it was mostly correct.
+I was thus unable to falsify my hypothesis.
 
-I was thus unable to falsify my hypothesis. This has some caveats though. I just
-want to mention one here: Anki tracks the total time spent per card, and summing
-up all the cards I did the total time spent rehearsing was 19 minutes.
+## Conclusion: caveats and reflection
 
-## Conclusion and reflection
+What does this mean? To begin with, I want to mention two caveats with the
+results:
 
-Some themes I want to discuss:
+(1) Anki tracks the total time spent per card, and summing up all the cards I did
+the total time spent rehearsing was 19 minutes. This effort was spread out over
+the three weeks. If we were to include this the total time spent on group A
+would double. However, if the results indeed are time-invariant (i.e. it'll
+take ~5m several months from now), the spacing effect would ensure that
+proportionally less time is spent reviewing.
 
-- When does it matter if we forget?
-- On the value of fluency
-- Problems with solution and problems with no clear solution
+(2) Capping a solution to 20 minutes doesn't really make sense, as it's really a
+non-solution. However, this makes the test "harder", so the artifical cap might
+fine. One way of getting around this difficulty is using a better non-binary
+test (i.e. not just solution and non-solution), such as what Ebbinghaus did when
+he looked at time for first errorless reproduction.
 
-Can we retain know-how by doing spaced repetition of know-what? I.e. not
-actively practicing but reminding ourselves of basic concepts.
+Taking the result at face-value, it seems as if it is indeed possible to retain
+practical skills by practicing know-what. There are a lot of questions that
+remain to be answered though. The first three are more practical and the latter
+three more philosophical, at least in their stated form:
 
-Spaced repetition only makes sense if you've learned something. I "knew" this
-and had certainly read about it, but I hadn't really internalized it before.
+1. Can other people reproduce it?
 
+2. Does the effect remain the same after several months, or does it fall apart?
+
+3. What happens when we ramp up the difficulty of the problems solved?
+
+4. The elephant in the room: How much are we over-specializing for these
+   specific problems when we are repeating? How transferable is the skill of
+   learning to solve problem X for solving problem Y?
+
+5. The second elephant: Is time better spent learning new things that build on
+   previous things you learned, allowing for some forgetting, rather than
+   clinging to remembering how to solve specific problem quickly?
+
+6. The third elephant: How does this, if at all, relate to skills and problems
+   that don't have (clear) solutions? In a very real sense, those are the
+   interesting problems in life.
+
+I mention the elephants because (a) they are important and (b) I'm still
+thinking about them. But there's nothing in my experiment that remotely touches
+on them, so I'm forced to keep silent on the matter.
+
+That said, I was somewhat surprised to see how effective using SRS was for
+retaining practical know-how. It seems like this technique is useful for a lot
+of things, especially when there's a premium on fluency.
+
+## Do you want to reproduce?
+
+I realize this is a long shot, especially since it takes quite a bit of effort
+to do, but if you are interested in this type of thing it'd be very interesting
+to see if this result is reproducible. Let me know on Twitter or by
+[email](mailto:me@oskarth.com) if you want to chat about how to structure it and maybe
+extend it.
+
+(If you liked this, you might enjoy [No Computer](/no-computer). To stay up to
+date on my experiments, consider
+[subscribing](https://oskarth.us10.list-manage.com/subscribe?u=eb9509b0e9820f2fc234227d6&id=6bb99e6219).)
+
+[^1]: If you are interested in reading about them in chronologial order, you can find them in my [experiments notebook](http://plan.oskarth.com) (entry 17-25).
+
+[^2]: [Anki](http://ankisrs.net).
+
+[^3]: [Random secret sequence script](https://gist.github.com/oskarth/1d2a1772d11006f45a32).
+
+[^4]: Ebbinghaus's *On Memory* is available [online](http://psychclassics.yorku.ca/Ebbinghaus/).
+
+[^5]: [Examples of Anki cards](http://plan.oskarth.com/22). These cards are from previous experiment, but the principle is the same.
