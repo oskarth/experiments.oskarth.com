@@ -1,5 +1,5 @@
 +++
-date = "2016-03-28T:12:00+02:00"
+date = "2016-03-28T12:00:00+02:00"
 title = "Spaced repetition and practice"
 +++
 
