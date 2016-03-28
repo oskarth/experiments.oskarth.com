@@ -1,5 +1,5 @@
 +++
-date = "2016-03-20T20:00:00+02:00"
+date = "2016-03-25T20:00:00+02:00"
 title = "Spaced repetition and practice"
 +++
 
@@ -16,8 +16,26 @@ often learned better once we do more advanced things. For example, if you grow
 up speaking German pronouns and cases will be ingrained, because you've dealt
 with sentences that depended on them for so long.
 
-What about things that are not naturally over-learned, for whatever reason? Can
-we learn things once and easily maintain that skill?
+What about skills that are not naturally over-learned, for whatever reason?
+Perhaps you only use JavaScript, SQL or Awk every now and then. Can we learn
+things once and easily maintain that skill?
+
+As I refined my experiments, I became curious about the possibility of retaining
+know-how (techne, or skills) using techniques that are usually used for
+know-what (episteme, or facts). The line between the two is sometimes blurry,
+but one distinction is that one can be codified and described, whereas the other
+is often implicit or "silent". For example, the capital of France is Paris is
+know-what, whereas knowing how to hammer a nail into a piece of wood at angle is
+know-how.
+
+One thought that tickled my imagination is that as we are programming, we often
+make the same mistakes, or forget to ask ourselves certain questions that would
+let us get to the core of the problem. Perhaps it is possibly to reprogram
+oneself to remember these things, thus aiding in know-how fluency. At one
+extreme you have things like remembering standard library functions or syntax,
+and at another you have generalized heuristics about how to think about certain
+classes of problems in terms of trade offs, invariants to check, problem solving
+techniques etc.
 
 ## Spaced repetition background
 
@@ -41,21 +59,21 @@ use spaced repetition.
 
 ## Methodology
 
-I precomputed a series of 5 As and 5 Bs in a random order that I'm unaware of
-[^3]. I then worked on 10 small exercises from the book *Eloquent Javascript*
-that I couldn't immediately produce an "optimal" solution for. I did this until
-I:
+I worked on 10 small exercises from the book *Eloquent Javascript* that I
+couldn't immediately produce an "optimal" solution for. I did this until I:
 
 1. felt like I understood the problem
 2. solved it in ~5-10m from scratch.
 
 This was my criterion for what it means to *learn* something, not unlike what
 Ebbinghaus calls the *first errorless reproduction* in his studies on memory
-[^4].
+[^3].
 
-For each exercise I made a few (2-8) flash cards and added them to my SRS. After
-doing this, I checked the next draw in my random sequence. If I got an A I kept
-the cards, and if I got a B I suspended it (i.e. I won't see it again).
+For each exercise I made a few (2-8) flash cards and added them to my SRS. I
+also precomputed a series of 5 As and 5 Bs in a random order that I was unaware
+of [^4]. After I added all the cards for that exercise, I checked the next draw
+in my random sequence. If I got an A I kept the cards, and if I got a B I
+suspended it (i.e. I won't see it again).
 
 As for the content of the cards, I tried a mix of cards that are all possible to
 do in one's head. Examples of types of cards include:
@@ -151,8 +169,8 @@ date on my experiments, consider
 
 [^2]: [Anki](http://ankisrs.net).
 
-[^3]: [Random secret sequence script](https://gist.github.com/oskarth/1d2a1772d11006f45a32).
+[^3]: Ebbinghaus's *On Memory* is available [online](http://psychclassics.yorku.ca/Ebbinghaus/).
 
-[^4]: Ebbinghaus's *On Memory* is available [online](http://psychclassics.yorku.ca/Ebbinghaus/).
+[^4]: [Random secret sequence script](https://gist.github.com/oskarth/1d2a1772d11006f45a32).
 
 [^5]: [Examples of Anki cards](http://plan.oskarth.com/22). These cards are from previous experiment, but the principle is the same.
