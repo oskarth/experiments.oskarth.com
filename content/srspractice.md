@@ -161,7 +161,7 @@ to see if this result is reproducible. Let me know on Twitter or by
 [email](mailto:me@oskarth.com) if you want to chat about how to structure it and maybe
 extend it.
 
-(If you liked this, you might enjoy [No Computer](/no-computer). To stay up to
+(If you liked this, you might enjoy [No Computer](http://experiments.oskarth.com/no-computer). To stay up to
 date on my experiments, consider
 [subscribing](https://oskarth.us10.list-manage.com/subscribe?u=eb9509b0e9820f2fc234227d6&id=6bb99e6219).)
 
