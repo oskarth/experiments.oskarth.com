@@ -1,5 +1,5 @@
 +++
-date = "2016-03-28T12:00:00+02:00"
+date = "2016-03-28T16:00:00+02:00"
 title = "Spaced repetition and practice"
 +++
 
@@ -25,8 +25,8 @@ know-how (techne, or skills) using techniques that are usually used for
 know-what (episteme, or facts). The line between the two is sometimes blurry,
 but one distinction is that one can be codified and described, whereas the other
 is often implicit or "silent". For example, the capital of France is Paris is
-know-what, whereas knowing how to hammer a nail into a piece of wood at angle is
-know-how.
+know-what, whereas knowing how to hammer a nail into a piece of wood at an angle
+is know-how.
 
 One thought that tickled my imagination is that as we are programming, we often
 make the same mistakes, or forget to ask ourselves certain questions that would
@@ -118,7 +118,7 @@ proportionally less time is spent reviewing.
 
 (2) Capping a solution to 20 minutes doesn't really make sense, as it's really a
 non-solution. However, this makes the test "harder", so the artifical cap might
-fine. One way of getting around this difficulty is using a better non-binary
+be fine. One way of getting around this difficulty is using a better non-binary
 test (i.e. not just solution and non-solution), such as what Ebbinghaus did when
 he looked at time for first errorless reproduction.
 
@@ -157,9 +157,9 @@ of things, especially when there's a premium on fluency.
 
 I realize this is a long shot, especially since it takes quite a bit of effort
 to do, but if you are interested in this type of thing it'd be very interesting
-to see if this result is reproducible. Let me know on Twitter or by
-[email](mailto:me@oskarth.com) if you want to chat about how to structure it and maybe
-extend it.
+to see if this result is reproducible. Let me know on
+[Twitter](https://twitter.com/oskarth) or by [email](mailto:me@oskarth.com) if
+you want to chat about how to structure it and maybe extend it.
 
 (If you liked this, you might enjoy [No Computer](http://experiments.oskarth.com/no-computer). To stay up to
 date on my experiments, consider
